@@ -15,7 +15,9 @@ docker compose exec -it api sh
 npm install
 npm run dev
 ```
-then you can access the api in http://localhost:3000
+then you can access the api in http://localhost:3000/api
+
+and the swagger api doc in http://localhost:3000/api-docs
 
 ### running tests
 ```bash
