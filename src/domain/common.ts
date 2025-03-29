@@ -3,7 +3,7 @@ import isEmail from 'validator/lib/isEmail';
 import {DomainConflictError} from "./errors";
 
 export class EntityId {
-    private id: string;
+    readonly id: string;
     constructor(id: string) {
         if (!validate(id)) {
             throw new DomainConflictError("Invalid UUID: " + id);
@@ -13,11 +13,18 @@ export class EntityId {
 }
 
 export class Email {
-    private value: string;
+    readonly value: string;
     constructor(value: string) {
         if (!isEmail(value)) {
             throw new DomainConflictError("Invalid email: " + value);
         }
+        this.value = value;
+    }
+}
+
+export class Credit {
+    readonly value: number;
+    constructor(value: number) {
         this.value = value;
     }
 }

@@ -3,7 +3,7 @@ import { Customer, CustomerRepository } from '../domain/customer';
 import {v4 as UUID} from "uuid";
 import { mock, mockReset } from 'jest-mock-extended';
 import {DomainConflictError} from "../domain/errors";
-import {EntityId, Email} from "../domain/common";
+import {EntityId, Email, Credit} from "../domain/common";
 
 describe('CustomerService', () => {
     const mockRepository = mock<CustomerRepository>();
@@ -17,6 +17,7 @@ describe('CustomerService', () => {
         const id = UUID();
         const email = "email@example.com";
         const expectedCustomer = new Customer(new EntityId(id), new Email(email));
+        expect(expectedCustomer.availableCredit.value).toBe(0);
 
         mockRepository.create.mockImplementationOnce(async () => {});
 
