@@ -11,6 +11,6 @@ export class CustomerService {
     async create(id: string, email: string): Promise<void> {
         const newCustomer = new Customer(new EntityId(id), new Email(email));
 
-        await this.repository.create(newCustomer);
+        await this.repository.save(newCustomer);
     }
 }

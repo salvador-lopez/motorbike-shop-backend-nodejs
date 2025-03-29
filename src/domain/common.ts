@@ -3,12 +3,12 @@ import isEmail from 'validator/lib/isEmail';
 import {DomainConflictError} from "./errors";
 
 export class EntityId {
-    readonly id: string;
+    readonly value: string;
     constructor(id: string) {
         if (!validate(id)) {
             throw new DomainConflictError("Invalid UUID: " + id);
         }
-        this.id = id;
+        this.value = id;
     }
 }
 
