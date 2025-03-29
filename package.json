@@ -1,0 +1,33 @@
+{
+  "name": "app",
+  "version": "1.0.0",
+  "description": "This project holds all the backend business logic and all the UIs (i.e. API REST) needed to create a motorbike shop",
+  "main": "dist/app.js",
+  "scripts": {
+    "test": "jest",
+    "build": "tsc",
+    "start": "node dist/app.js",
+    "dev": "ts-node src/app.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/salvador-lopez/motorbike-shop-backend-nodejs.git"
+  },
+  "author": "slopez",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/salvador-lopez/motorbike-shop-backend-nodejs/issues"
+  },
+  "homepage": "https://github.com/salvador-lopez/motorbike-shop-backend-nodejs#readme",
+  "dependencies": {
+    "express": "^4.21.2",
+    "ts-node": "^10.9.2"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.1",
+    "@types/jest": "^29.5.14",
+    "@types/node": "^22.13.14",
+    "jest": "^29.7.0",
+    "typescript": "^5.8.2"
+  }
+}
