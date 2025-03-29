@@ -3,6 +3,7 @@ import { Customer, CustomerRepository } from '../domain/customer';
 import {v4 as UUID} from "uuid";
 import { mock, mockReset } from 'jest-mock-extended';
 import {DomainConflictError} from "../domain/errors";
+import {EntityId} from "../domain/common";
 
 describe('CustomerService', () => {
     const mockRepository = mock<CustomerRepository>();
@@ -13,8 +14,9 @@ describe('CustomerService', () => {
     });
 
     it('should create a new customer', async () => {
+
         const id = UUID();
-        const expectedCustomer = new Customer(id);
+        const expectedCustomer = new Customer(new EntityId(id));
 
         mockRepository.create.mockImplementationOnce(async () => {});
 
@@ -30,7 +32,7 @@ describe('CustomerService', () => {
 
         const resultPromise = customerService.create(id);
 
-        await expect(resultPromise).rejects.toThrowError("Invalid UUID");
+        await expect(resultPromise).rejects.toThrowError("Invalid UUID: invalid-uuid");
         await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
     });
 });

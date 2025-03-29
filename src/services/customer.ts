@@ -1,6 +1,5 @@
 import {Customer, CustomerRepository} from "../domain/customer";
-import {validate} from "uuid";
-import {DomainConflictError} from "../domain/errors";
+import {EntityId} from "../domain/common";
 
 export class CustomerService {
     private repository: CustomerRepository;
@@ -10,10 +9,9 @@ export class CustomerService {
     }
 
     async create(id: string): Promise<void> {
-        if (!validate(id)) {
-            throw new DomainConflictError("Invalid UUID");
-        }
-        const newCustomer = new Customer(id)
+        const customerId = new EntityId(id);
+        const newCustomer = new Customer(customerId)
+
         await this.repository.create(newCustomer);
     }
 }

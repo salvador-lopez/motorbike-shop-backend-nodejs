@@ -1,11 +1,13 @@
+import {EntityId} from "./common";
+
 export interface CustomerRepository {
     create(customer: Customer): Promise<void>;
 }
 
 export class Customer {
-    private id: string;
+    private id: EntityId;
 
-    constructor(id: string) {
+    constructor(id: EntityId) {
         this.id = id;
     }
 }
