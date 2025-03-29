@@ -1,9 +1,10 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
+import {loadRoutes} from "./routes";
+import {setupSwagger} from "./swagger";
 
 const app = express();
 
-app.get('/', (req: Request, res: Response) => {
-    res.send('Hello World!');
-});
+setupSwagger(app);
+loadRoutes(app)
 
 export default app;
