@@ -1,0 +1,6 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="run motorbike api" type="ChromiumRemoteDebugType" factoryName="Chromium Remote" port="9229" restartOnDisconnect="true">
+    <mapping url="http://localhost:9229" local-file="$PROJECT_DIR$/src" />
+    <method v="2" />
+  </configuration>
+</component>
