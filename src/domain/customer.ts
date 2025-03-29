@@ -5,17 +5,13 @@ export interface CustomerRepository {
 }
 
 export class Customer {
-    private id: EntityId;
-    private email: Email;
-    private _availableCredit: Credit
-
-    get availableCredit(): Credit {
-        return this._availableCredit;
-    }
+    readonly id: EntityId;
+    readonly email: Email;
+    readonly availableCredit: Credit
 
     constructor(id: EntityId, email: Email) {
         this.id = id;
         this.email = email;
-        this._availableCredit = new Credit(0);
+        this.availableCredit = new Credit(0);
     }
 }
