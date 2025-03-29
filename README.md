@@ -16,3 +16,8 @@ npm install
 npm run dev
 ```
 then you can access the api in http://localhost:3000
+
+### running tests
+```bash
+docker compose run api npm test
+```

@@ -6,8 +6,8 @@
   "scripts": {
     "test": "jest",
     "build": "tsc",
-    "start": "node dist/app.js",
-    "dev": "ts-node src/app.ts"
+    "start": "node dist/server.js",
+    "dev": "ts-node src/server.ts"
   },
   "repository": {
     "type": "git",
@@ -27,7 +27,9 @@
     "@types/express": "^5.0.1",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.13.14",
+    "@types/supertest": "^6.0.3",
     "jest": "^29.7.0",
+    "supertest": "^7.1.0",
     "ts-jest": "^29.3.0",
     "typescript": "^5.8.2"
   }
