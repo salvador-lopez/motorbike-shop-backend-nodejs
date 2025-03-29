@@ -6,8 +6,10 @@ export interface CustomerRepository {
 
 export class Customer {
     private id: EntityId;
+    private email: string;
 
-    constructor(id: EntityId) {
+    constructor(id: EntityId, email: string) {
         this.id = id;
+        this.email = email;
     }
 }

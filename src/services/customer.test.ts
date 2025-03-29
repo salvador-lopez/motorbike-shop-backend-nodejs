@@ -14,23 +14,23 @@ describe('CustomerService', () => {
     });
 
     it('should create a new customer', async () => {
-
         const id = UUID();
-        const expectedCustomer = new Customer(new EntityId(id));
+        const email = "email@example.com";
+        const expectedCustomer = new Customer(new EntityId(id), email);
 
         mockRepository.create.mockImplementationOnce(async () => {});
 
-        await expect(customerService.create(id)).resolves.toBeUndefined();
+        await expect(customerService.create(id, email)).resolves.toBeUndefined();
         expect(mockRepository.create).toHaveBeenCalledWith(expectedCustomer);
 
     });
 
     it('should throw DomainConflictError when uuid is invalid', async () => {
         const id = "invalid-uuid";
-
+        const email = "email@example.com";
         mockRepository.create.mockImplementationOnce(async () => {});
 
-        const resultPromise = customerService.create(id);
+        const resultPromise = customerService.create(id, email);
 
         await expect(resultPromise).rejects.toThrowError("Invalid UUID: invalid-uuid");
         await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);

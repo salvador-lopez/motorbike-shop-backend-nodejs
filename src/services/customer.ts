@@ -8,9 +8,9 @@ export class CustomerService {
         this.repository = customerRepository;
     }
 
-    async create(id: string): Promise<void> {
+    async create(id: string, email: string): Promise<void> {
         const customerId = new EntityId(id);
-        const newCustomer = new Customer(customerId)
+        const newCustomer = new Customer(customerId, email);
 
         await this.repository.create(newCustomer);
     }
