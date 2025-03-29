@@ -3,7 +3,7 @@ import { Customer, CustomerRepository } from '../domain/customer';
 import {v4 as UUID} from "uuid";
 import { mock, mockReset } from 'jest-mock-extended';
 import {DomainConflictError} from "../domain/errors";
-import {EntityId} from "../domain/common";
+import {EntityId, Email} from "../domain/common";
 
 describe('CustomerService', () => {
     const mockRepository = mock<CustomerRepository>();
@@ -16,7 +16,7 @@ describe('CustomerService', () => {
     it('should create a new customer', async () => {
         const id = UUID();
         const email = "email@example.com";
-        const expectedCustomer = new Customer(new EntityId(id), email);
+        const expectedCustomer = new Customer(new EntityId(id), new Email(email));
 
         mockRepository.create.mockImplementationOnce(async () => {});
 
@@ -33,6 +33,17 @@ describe('CustomerService', () => {
         const resultPromise = customerService.create(id, email);
 
         await expect(resultPromise).rejects.toThrowError("Invalid UUID: invalid-uuid");
+        await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
+    });
+
+    it('should throw DomainConflictError when email is invalid', async () => {
+        const id = UUID();
+        const email = "invalid-email";
+        mockRepository.create.mockImplementationOnce(async () => {});
+
+        const resultPromise = customerService.create(id, email);
+
+        await expect(resultPromise).rejects.toThrowError("Invalid email: invalid-email");
         await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
     });
 });

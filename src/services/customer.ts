@@ -1,5 +1,5 @@
 import {Customer, CustomerRepository} from "../domain/customer";
-import {EntityId} from "../domain/common";
+import {EntityId, Email} from "../domain/common";
 
 export class CustomerService {
     private repository: CustomerRepository;
@@ -9,8 +9,7 @@ export class CustomerService {
     }
 
     async create(id: string, email: string): Promise<void> {
-        const customerId = new EntityId(id);
-        const newCustomer = new Customer(customerId, email);
+        const newCustomer = new Customer(new EntityId(id), new Email(email));
 
         await this.repository.create(newCustomer);
     }
