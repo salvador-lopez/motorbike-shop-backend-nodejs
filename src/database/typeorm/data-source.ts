@@ -18,7 +18,7 @@ export const getDataSource = (): DataSource => {
 
 export const defaultDataSource = new DataSource({
     type: "sqlite",
-    database: "./motorbike-shop.db",
+    database: "./src/database/sqlite/motorbike-shop.db",
     synchronize: true,
     entities: [TypeOrmCustomer],
 });
