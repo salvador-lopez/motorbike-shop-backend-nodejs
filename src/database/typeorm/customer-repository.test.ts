@@ -1,4 +1,4 @@
-import {testDataSource} from "./test-data-source";
+import {testDataSource} from "./data-source";
 import {EntityId, Email} from "../../domain/common";
 import {Customer} from "../../domain/customer";
 import { v4 as UUID} from 'uuid';
@@ -11,6 +11,14 @@ const typeOrmRepo = testDataSource.getRepository(TypeOrmCustomer);
 beforeEach(async () => {
     customerRepo = new TypeOrmCustomerRepository(typeOrmRepo);
     await typeOrmRepo.clear();
+});
+
+beforeAll(async () => {
+    await testDataSource.initialize();
+});
+
+afterAll(async () => {
+    await testDataSource.destroy();
 });
 
 describe("Customer Repository Integration Test", () => {

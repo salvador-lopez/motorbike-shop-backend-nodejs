@@ -15,4 +15,4 @@ router.get('/healthz', (req: Request, res: Response) => {
     res.send('ok');
 });
 
-module.exports = router;
+export default router;

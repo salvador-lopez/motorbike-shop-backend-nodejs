@@ -1,10 +1,20 @@
 import express from 'express';
 import {loadRoutes} from "./routes";
 import {setupSwagger} from "./swagger";
+import {defaultDataSource, initializeDataSource} from "./database/typeorm/data-source";
+import {DataSource} from "typeorm";
 
-const app = express();
+const createApp = async (dataSource: DataSource = defaultDataSource) => {
+    const app = express();
 
-setupSwagger(app);
-loadRoutes(app)
+    await initializeDataSource(dataSource);
 
-export default app;
+    setupSwagger(app);
+    loadRoutes(app)
+
+    app.use(express.json());
+
+    return app;
+}
+
+export default createApp;
