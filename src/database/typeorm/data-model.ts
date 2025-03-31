@@ -8,7 +8,7 @@ export class TypeOrmCustomer {
     @Column({ type: "varchar", length: 255, unique: true })
     readonly email: string;
 
-    @Column({ type: "decimal", precision: 10, scale: 2, default: 0 })
+    @Column({ type: "decimal" })
     readonly availableCredit: number;
 
     constructor(id: string, email: string, availableCredit: number) {

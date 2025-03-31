@@ -88,7 +88,7 @@ const createRouter = (customerService: CustomerService): Router => {
      *                 available_credit:
      *                   type: number
      *                   format: float
-     *                   description: The available credit for the customer with two decimals
+     *                   description: The available credit for the customer
      *                   example: 150.75
      *       404:
      *         description: Customer not found
@@ -146,6 +146,45 @@ const createRouter = (customerService: CustomerService): Router => {
             res.status(500).send("Internal Server Error");
         }
     });
+
+    /**
+     * @openapi
+     * /customers/{id}/add-credit:
+     *   patch:
+     *     summary: Add credit to a customer
+     *     description: Updates a customer's credit balance using their unique ID and the provided credit amount.
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: string
+     *           format: uuid
+     *           description: The unique identifier of the customer
+     *           example: "9f2f9e08-93b6-47c1-a54e-5cffc6f59e4b"
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               credit:
+     *                 type: number
+     *                 description: The amount of credit to add to the customer's account
+     *                 example: 100
+     *             required:
+     *               - credit
+     *     responses:
+     *       200:
+     *         description: Credit successfully added to the customer's account
+     *       400:
+     *         description: Conflict or invalid credit operation
+     *       404:
+     *         description: Customer not found
+     *       500:
+     *         description: Internal server error
+     */
 
     router.patch('/customers/:id/add-credit', async (req: Request, res: Response) => {
         try {
