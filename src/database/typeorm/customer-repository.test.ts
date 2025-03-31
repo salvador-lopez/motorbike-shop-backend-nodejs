@@ -27,7 +27,7 @@ describe("Customer Repository Integration Test", () => {
         const email = new Email("email@example.com");
         const customer = new Customer(entityId, email);
 
-        await customerRepo.save(customer);
+        await customerRepo.create(customer);
 
         let customerDataModel = await typeOrmRepo.findOneBy({ id: entityId.value });
 

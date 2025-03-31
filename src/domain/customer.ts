@@ -1,7 +1,7 @@
 import {EntityId, Email, Credit} from "./common";
 
 export interface CustomerRepository {
-    save(customer: Customer): Promise<void>;
+    create(customer: Customer): Promise<void>;
 }
 
 export class Customer {
