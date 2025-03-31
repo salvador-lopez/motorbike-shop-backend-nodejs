@@ -39,6 +39,68 @@ describe("Customer Repository Integration Test", () => {
             expect(customerDataModel.availableCredit).toBe(0);
         }
     });
+    
+    it("should save a customer", async () => {
+        const entityId = new EntityId(UUID());
+        const email = new Email("email@example.com");
+        const customer = new Customer(entityId, email);
+
+        await customerRepo.save(customer);
+
+        const customerDataModel = await typeOrmRepo.findOneBy({ id: entityId.value });
+
+        expect(customerDataModel).not.toBeNull();
+        if (customerDataModel !== null) {
+            expect(customerDataModel.id).toBe(entityId.value);
+            expect(customerDataModel.email).toBe(email.value);
+            expect(customerDataModel.availableCredit).toBe(0);
+        }
+    });
+    
+    it("should update the existent user when call to save", async () => {
+        const entityId = new EntityId(UUID());
+        const email = new Email("email@example.com");
+        const customer = new Customer(entityId, email);
+
+        await customerRepo.save(customer);
+
+        const newCreditValue = 10.5;
+        customer.addCredit(new Credit(newCreditValue));
+        
+        await customerRepo.save(customer);
+        
+        const customerDataModel = await typeOrmRepo.findOneBy({ id: entityId.value });
+
+        expect(customerDataModel).not.toBeNull();
+        if (customerDataModel !== null) {
+            expect(customerDataModel.id).toBe(entityId.value);
+            expect(customerDataModel.email).toBe(email.value);
+            expect(customerDataModel.availableCredit).toBe(newCreditValue);
+        }
+    });
+
+    it("should throw an unique constraint database error when try to save the customer with an email assigned to other customer", async () => {
+        const customerAEntityId = new EntityId(UUID());
+        const customerAEmail = new Email("customer-a-email@example.com");
+        let customerA = new Customer(customerAEntityId, customerAEmail);
+        
+        const customerBEntityId = new EntityId(UUID());
+        const customerBEmail = new Email("customer-b-email@example.com");
+        const customerB = new Customer(customerBEntityId, customerBEmail);
+
+        await customerRepo.create(customerA);
+        await customerRepo.create(customerB);
+
+        customerA = new Customer(customerAEntityId, customerBEmail);
+        
+        const resultPromise = customerRepo.save(customerA);
+
+        await expect(resultPromise)
+            .rejects.toThrow("SQLITE_CONSTRAINT: UNIQUE constraint failed: customers.email");
+        await expect(resultPromise)
+            .rejects.toBeInstanceOf(UniqueConstraintError);
+    });
+    
     it("should throw an unique constraint database error when try to create customer with same id twice", async () => {
         const entityId = new EntityId(UUID());
         const email = new Email("email@example.com");
@@ -55,6 +117,7 @@ describe("Customer Repository Integration Test", () => {
         await expect(resultPromise)
             .rejects.toBeInstanceOf(UniqueConstraintError);
     });
+    
     it("should throw an unique constraint database error when try to create customer with same email twice", async () => {
         const entityId = new EntityId(UUID());
         const newEntityId = new EntityId(UUID());
@@ -71,6 +134,7 @@ describe("Customer Repository Integration Test", () => {
         await expect(resultPromise)
             .rejects.toBeInstanceOf(UniqueConstraintError);
     });
+    
     it("should find a customer by it´s id", async () => {
         const entityId = new EntityId(UUID());
         const email = new Email("email@example.com");
@@ -87,12 +151,14 @@ describe("Customer Repository Integration Test", () => {
             expect(customer.availableCredit).toEqual(new Credit(0));
         }
     });
+    
     it("should return void when find a customer by it´s but the customer not found", async () => {
         const entityId = new EntityId(UUID());
 
         const customer = await customerRepo.findById(entityId);
         expect(customer).toBeNull();
     });
+    
     it("should delete a customer", async () => {
         const entityId = new EntityId(UUID());
         const email = new Email("email@example.com");

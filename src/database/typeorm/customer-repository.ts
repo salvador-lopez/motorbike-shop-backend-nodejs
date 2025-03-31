@@ -14,7 +14,7 @@ export class TypeOrmCustomerRepository implements CustomerRepository {
                 new EntityId(customerDataModel.id),
                 new Email(customerDataModel.email),
             ]);
-            (customer as any)._availableCredit = customerDataModel.availableCredit;
+            (customer as any)._availableCredit = new Credit(customerDataModel.availableCredit);
             return customer;
         }
 
@@ -39,11 +39,20 @@ export class TypeOrmCustomerRepository implements CustomerRepository {
         }
     }
 
-    async delete(customer: Customer): Promise<void> {
-        await this.typeOrmRepo.delete(customer.id.value);
+    async save(customer: Customer): Promise<void> {
+        try {
+            await this.typeOrmRepo.save(
+                new TypeOrmCustomer(customer.id.value, customer.email.value, customer.availableCredit.value)
+            );
+        } catch (error) {
+            if (error instanceof QueryFailedError && error.message.includes("UNIQUE constraint failed")) {
+                throw new UniqueConstraintError(error.message);
+            }
+            throw error;
+        }
     }
 
-    async save(customer: Customer): Promise<void> {
-        return;
+    async delete(customer: Customer): Promise<void> {
+        await this.typeOrmRepo.delete(customer.id.value);
     }
 }
