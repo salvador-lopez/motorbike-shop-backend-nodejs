@@ -65,3 +65,23 @@ describe('GET /api/customers/:id', () => {
         expect(response.text).toBe(`Entity not found with id ${id}`);
     });
 });
+
+describe('DELETE /api/customers/:id', () => {
+    it('should respond with 200 ok', async () => {
+        const id = UUID();
+        await request(app).post('/api/customers').send({ id: id, email: 'customer@example.com' });
+
+        const response = await request(app)
+            .delete(`/api/customers/${id}`)
+            .send();
+        expect(response.status).toBe(200);
+        expect(response.text).toBe('');
+    });
+    it('should respond with 404 not found', async () => {
+        const id = UUID();
+
+        const response = await request(app).delete(`/api/customers/${id}`).send();
+        expect(response.status).toBe(404);
+        expect(response.text).toBe(`Entity not found with id ${id}`);
+    });
+});

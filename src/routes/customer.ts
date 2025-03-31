@@ -4,6 +4,7 @@ import {CustomerService} from "../services/customer";
 import {TypeOrmCustomer} from "../database/typeorm/data-model";
 import {TypeOrmCustomerRepository} from "../database/typeorm/customer-repository";
 import {DomainConflictError, EntityNotFoundError} from "../domain/errors";
+import {v4 as UUID} from "uuid";
 
 const createRouter = (customerService: CustomerService): Router => {
     const router = Router();
@@ -65,6 +66,19 @@ const createRouter = (customerService: CustomerService): Router => {
             }
             if (error instanceof DomainConflictError) {
                 res.status(400).send(error.message);
+                return;
+            }
+            res.status(500).send("Internal Server Error");
+        }
+    });
+
+    router.delete('/customers/:id', async (req: Request, res: Response) => {
+        try {
+            await customerService.delete(req.params.id);
+            res.status(200).send();
+        } catch (error) {
+            if (error instanceof EntityNotFoundError) {
+                res.status(404).send(error.message);
                 return;
             }
             res.status(500).send("Internal Server Error");
