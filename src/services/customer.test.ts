@@ -1,8 +1,8 @@
-import { CustomerService } from './customer';
+import {CustomerDTO, CustomerService} from './customer';
 import { Customer, CustomerRepository } from '../domain/customer';
 import {v4 as UUID} from "uuid";
 import { mock, mockReset } from 'jest-mock-extended';
-import {DomainConflictError} from "../domain/errors";
+import {DomainConflictError, EntityNotFoundError} from "../domain/errors";
 import {EntityId, Email, Credit} from "../domain/common";
 import {UniqueConstraintError} from "../database/errors";
 
@@ -26,7 +26,7 @@ describe('CustomerService', () => {
         expect(mockRepository.create).toHaveBeenCalledWith(expectedCustomer);
     });
 
-    it('should throw DomainConflictError when uuid is invalid', async () => {
+    it('create should throw DomainConflictError when uuid is invalid', async () => {
         const id = "invalid-uuid";
         const email = "email@example.com";
         mockRepository.create.mockImplementationOnce(async () => {});
@@ -37,7 +37,7 @@ describe('CustomerService', () => {
         await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
     });
 
-    it('should throw DomainConflictError when email is invalid', async () => {
+    it('create should throw DomainConflictError when email is invalid', async () => {
         const id = UUID();
         const email = "invalid-email";
         mockRepository.create.mockImplementationOnce(async () => {});
@@ -48,7 +48,7 @@ describe('CustomerService', () => {
         await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
     });
 
-    it('should throw DomainConflictError when repository throw UniqueConstraintError', async () => {
+    it('create should throw DomainConflictError when repository throw UniqueConstraintError', async () => {
         const id = UUID();
         const email = "email@example.com";
         mockRepository.create.mockImplementationOnce(async () => {
@@ -59,5 +59,32 @@ describe('CustomerService', () => {
 
         await expect(resultPromise).rejects.toThrow("unique constraint error");
         await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
+    });
+
+    it('should get the customer by its id', async () => {
+        const id = UUID();
+        const email = "email@example.com";
+
+        mockRepository.findById.mockImplementationOnce(async () => {
+            return new Customer(new EntityId(id), new Email(email));
+        });
+
+        const expectedCustomerDTO = new CustomerDTO(id, email);
+        const customerDTOFound = await customerService.get(id);
+
+        expect(customerDTOFound).toEqual(expectedCustomerDTO);
+    });
+
+    it('get should throw EntityNotFoundError when repository findById return Promise<void>', async () => {
+        const id = UUID();
+
+        mockRepository.findById.mockImplementationOnce(async () => {
+            return;
+        });
+
+        const resultPromise = customerService.get(id);
+
+        await expect(resultPromise).rejects.toThrow("Entity not found with id " + id);
+        await expect(resultPromise).rejects.toBeInstanceOf(EntityNotFoundError);
     });
 });

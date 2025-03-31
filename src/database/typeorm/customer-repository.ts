@@ -3,9 +3,13 @@ import {Repository} from "typeorm/repository/Repository";
 import {TypeOrmCustomer} from "./data-model";
 import {QueryFailedError} from "typeorm";
 import {UniqueConstraintError} from "../errors";
+import {EntityId} from "../../domain/common";
 
 
 export class TypeOrmCustomerRepository implements CustomerRepository {
+    findById(id: EntityId): Promise<Customer | void> {
+        return Promise.resolve(undefined);
+    }
     private typeOrmRepo: Repository<TypeOrmCustomer>;
 
     constructor(typeOrmRepo: Repository<TypeOrmCustomer>) {
