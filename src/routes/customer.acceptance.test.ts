@@ -28,11 +28,11 @@ describe('POST /api/customers', () => {
         expect(response.text).toBe('');
     });
     it('should respond with 409 domain conflict', async () => {
-        const responsePromise = await request(app)
+        const response = await request(app)
             .post('/api/customers')
             .send({ id: UUID(), email: 'invalid-email-example.com' });
-        expect(responsePromise.status).toBe(400);
-        expect(responsePromise.text).toBe("Invalid email: invalid-email-example.com");
+        expect(response.status).toBe(400);
+        expect(response.text).toBe("Invalid email: invalid-email-example.com");
     });
 });
 
@@ -50,10 +50,18 @@ describe('GET /api/customers/:id', () => {
 
         expect(response.text).toBe(expectedResponseText);
     });
+    it('should respond with 400 bad request', async () => {
+        const id = "invalid-uuid";
+
+        const response = await request(app).get(`/api/customers/${id}`).send();
+        expect(response.status).toBe(400);
+        expect(response.text).toBe(`Invalid UUID: ${id}`);
+    });
     it('should respond with 404 not found', async () => {
         const id = UUID();
 
         const response = await request(app).get(`/api/customers/${id}`).send();
         expect(response.status).toBe(404);
+        expect(response.text).toBe(`Entity not found with id ${id}`);
     });
 });
