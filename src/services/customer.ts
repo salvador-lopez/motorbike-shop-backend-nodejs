@@ -78,11 +78,11 @@ export class CustomerDTO {
         this.availableCredit = availableCredit;
     }
 
-    toJSON(): string {
-        return JSON.stringify({
+    toJSON() {
+        return {
             id: this.id,
             email: this.email,
-            available_credit: this.availableCredit
-        });
+            available_credit: this.availableCredit,
+        };
     }
 }

@@ -46,7 +46,7 @@ describe('GET /api/customers/:id', () => {
         const response = await request(app).get(`/api/customers/${id}`).send();
         expect(response.status).toBe(200);
 
-        const expectedResponseText = `{"id":"${id}","email":"${email}","available_credit":${availableCredit}}`;
+        const expectedResponseText = JSON.stringify({ id: id, email: email, available_credit: availableCredit });
 
         expect(response.text).toBe(expectedResponseText);
     });
@@ -63,6 +63,31 @@ describe('GET /api/customers/:id', () => {
         const response = await request(app).get(`/api/customers/${id}`).send();
         expect(response.status).toBe(404);
         expect(response.text).toBe(`Entity not found with id ${id}`);
+    });
+});
+
+describe('GET /api/customers', () => {
+    it('should respond with 200 ok with all the customer resources', async () => {
+        const id = UUID();
+        const email = 'customer@example.com';
+        const otherId = UUID();
+        const otherEmail = 'other-customer@example.com';
+        const credit = 0;
+        const otherCredit = 10.4;
+
+        await request(app).post('/api/customers').send({ id: id, email: email });
+        await request(app).post('/api/customers').send({ id: otherId, email: otherEmail });
+        await request(app).patch(`/api/customers/${otherId}/add-credit`).send({ credit: 10.4 });
+
+        const response = await request(app).get('/api/customers').send();
+        expect(response.status).toBe(200);
+
+        const expectedResponseText = JSON.stringify([
+            { id: otherId, email: otherEmail, available_credit: otherCredit },
+            { id: id, email: email, available_credit: credit }
+        ]);
+
+        expect(response.text).toBe(expectedResponseText);
     });
 });
 
