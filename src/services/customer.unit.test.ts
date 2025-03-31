@@ -108,4 +108,16 @@ describe('CustomerService', () => {
         await customerService.delete(id);
         expect(mockRepository.delete).toHaveBeenCalledWith(customer);
     });
+    it('delete should throw EntityNotFoundError when repository findById return Promise<void>', async () => {
+        const id = UUID();
+
+        mockRepository.findById.mockImplementationOnce(async () => {
+            return;
+        });
+
+        const resultPromise = customerService.delete(id);
+
+        await expect(resultPromise).rejects.toThrow("Entity not found with id " + id);
+        await expect(resultPromise).rejects.toBeInstanceOf(EntityNotFoundError);
+    });
 });

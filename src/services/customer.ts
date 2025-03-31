@@ -37,9 +37,12 @@ export class CustomerService {
     async delete(id: string): Promise<void> {
         const entityId = new EntityId(id);
         const customer = await this.repository.findById(entityId);
-        if (customer) {
-            await this.repository.delete(customer);
+
+        if (!customer) {
+            throw new EntityNotFoundError(entityId);
         }
+
+        await this.repository.delete(customer);
     }
 }
 
