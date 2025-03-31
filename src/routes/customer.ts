@@ -38,8 +38,6 @@ const createRouter = (customerService: CustomerService): Router => {
      *         description: Resource created successfully. No content returned.
      *       400:
      *         description: Bad request. Invalid or missing parameters.
-     *       409:
-     *         description: DomainConflict. The parameters are valid in terms of format but the business requirements are not met.
      *       500:
      *         description: Internal server error.
      */
@@ -49,7 +47,7 @@ const createRouter = (customerService: CustomerService): Router => {
             res.status(201).send();
         } catch (error) {
             if (error instanceof DomainConflictError) {
-                res.status(409).send(error.message);
+                res.status(400).send(error.message);
                 return;
             }
             res.status(500).send("Internal Server Error");

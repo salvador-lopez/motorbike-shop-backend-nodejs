@@ -30,7 +30,7 @@ describe('POST /api/customers', () => {
         const responsePromise = await request(app)
             .post('/api/customers')
             .send({ id: 'ffc63590-81f8-4bbe-8b44-90d2d02a4098', email: 'invalid-email-example.com' });
-        expect(responsePromise.status).toBe(409);
+        expect(responsePromise.status).toBe(400);
         expect(responsePromise.text).toBe("Invalid email: invalid-email-example.com");
     });
 });
