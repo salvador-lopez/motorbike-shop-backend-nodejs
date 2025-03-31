@@ -4,7 +4,6 @@ import {CustomerService} from "../services/customer";
 import {TypeOrmCustomer} from "../database/typeorm/data-model";
 import {TypeOrmCustomerRepository} from "../database/typeorm/customer-repository";
 import {DomainConflictError, EntityNotFoundError} from "../domain/errors";
-import {v4 as UUID} from "uuid";
 
 const createRouter = (customerService: CustomerService): Router => {
     const router = Router();
@@ -24,6 +23,7 @@ const createRouter = (customerService: CustomerService): Router => {
      *             properties:
      *               id:
      *                 type: string
+     *                 format: uuid
      *                 description: The unique identifier for the customer
      *                 example: "9f2f9e08-93b6-47c1-a54e-5cffc6f59e4b"
      *               email:
@@ -55,6 +55,46 @@ const createRouter = (customerService: CustomerService): Router => {
         }
     });
 
+    /**
+     * @openapi
+     * /customers/{id}:
+     *   get:
+     *     summary: Get customer by ID
+     *     description: Get Customer by ID.
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         type: string
+     *         format: uuid
+     *         description: The unique identifier of the customer
+     *         example: "9f2f9e08-93b6-47c1-a54e-5cffc6f59e4b"
+     *     responses:
+     *       200:
+     *         description: Customer successfully returned
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: object
+     *               properties:
+     *                 id:
+     *                   type: string
+     *                   format: uuid
+     *                   description: The unique identifier of the customer
+     *                 email:
+     *                   type: string
+     *                   format: email
+     *                   description: The email address of the customer
+     *                 available_credit:
+     *                   type: number
+     *                   format: float
+     *                   description: The available credit for the customer with two decimals
+     *                   example: 150.75
+     *       404:
+     *         description: Customer not found
+     *       500:
+     *         description: Internal server error
+     */
     router.get('/customers/:id', async (req: Request, res: Response) => {
         try {
             const customerDTO = await customerService.get(req.params.id);
@@ -72,6 +112,28 @@ const createRouter = (customerService: CustomerService): Router => {
         }
     });
 
+    /**
+     * @openapi
+     * /customers/{id}:
+     *   delete:
+     *     summary: Delete a customer
+     *     description: Removes a customer from the system using their unique ID.
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         type: string
+     *         format: uuid
+     *         description: The unique identifier of the customer
+     *         example: "9f2f9e08-93b6-47c1-a54e-5cffc6f59e4b"
+     *     responses:
+     *       200:
+     *         description: Customer successfully deleted
+     *       404:
+     *         description: Customer not found
+     *       500:
+     *         description: Internal server error
+     */
     router.delete('/customers/:id', async (req: Request, res: Response) => {
         try {
             await customerService.delete(req.params.id);
