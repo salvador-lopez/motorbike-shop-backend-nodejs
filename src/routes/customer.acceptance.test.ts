@@ -85,3 +85,34 @@ describe('DELETE /api/customers/:id', () => {
         expect(response.text).toBe(`Entity not found with id ${id}`);
     });
 });
+
+describe('PATCH /api/customers/:id/add-credit', () => {
+    it('should respond with 200 ok', async () => {
+        const id = UUID();
+        const credit = 10.5;
+        const email = 'customer@example.com';
+
+        await request(app).post('/api/customers').send({ id: id, email: email });
+
+        const response = await request(app).patch(`/api/customers/${id}/add-credit`).send({ credit: credit });
+
+        expect(response.status).toBe(200);
+        expect(response.text).toBe('');
+    });
+    it('should respond with 404 not found', async () => {
+        const id = UUID();
+        const credit = 20;
+
+        const response = await request(app).patch(`/api/customers/${id}/add-credit`).send({ credit: credit });
+        expect(response.status).toBe(404);
+        expect(response.text).toBe(`Entity not found with id ${id}`);
+    });
+    it('should respond with 400 bad request', async () => {
+        const id = UUID();
+        const credit = -20;
+
+        const response = await request(app).patch(`/api/customers/${id}/add-credit`).send({ credit: credit });
+        expect(response.status).toBe(400);
+        expect(response.text).toBe("Credit cannot be negative");
+    });
+});

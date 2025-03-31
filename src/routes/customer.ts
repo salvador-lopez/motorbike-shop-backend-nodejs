@@ -147,6 +147,23 @@ const createRouter = (customerService: CustomerService): Router => {
         }
     });
 
+    router.patch('/customers/:id/add-credit', async (req: Request, res: Response) => {
+        try {
+            await customerService.addCredit(req.params.id, req.body.credit);
+            res.status(200).send();
+        } catch (error) {
+            if (error instanceof EntityNotFoundError) {
+                res.status(404).send(error.message);
+                return;
+            }
+            if (error instanceof DomainConflictError) {
+                res.status(400).send(error.message);
+                return;
+            }
+            res.status(500).send("Internal Server Error");
+        }
+    });
+
     return router;
 };
 
