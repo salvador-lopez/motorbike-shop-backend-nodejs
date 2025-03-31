@@ -87,4 +87,10 @@ describe("Customer Repository Integration Test", () => {
             expect(customer.availableCredit).toEqual(new Credit(0));
         }
     });
+    it("should return void when find a customer by it´s but the customer not found", async () => {
+        const entityId = new EntityId(UUID());
+
+        const customer = await customerRepo.findById(entityId);
+        expect(customer).toBeUndefined();
+    });
 });
