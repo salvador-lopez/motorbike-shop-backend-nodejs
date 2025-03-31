@@ -1,8 +1,9 @@
 import {Request, Response, Router} from "express";
-import {getDataSource, testDataSource} from "../database/typeorm/data-source";
+import {getDataSource} from "../database/typeorm/data-source";
 import {CustomerService} from "../services/customer";
 import {TypeOrmCustomer} from "../database/typeorm/data-model";
 import {TypeOrmCustomerRepository} from "../database/typeorm/customer-repository";
+import {DomainConflictError} from "../domain/errors";
 
 const createRouter = (customerService: CustomerService): Router => {
     const router = Router();
@@ -37,13 +38,22 @@ const createRouter = (customerService: CustomerService): Router => {
      *         description: Resource created successfully. No content returned.
      *       400:
      *         description: Bad request. Invalid or missing parameters.
+     *       409:
+     *         description: DomainConflict. The parameters are valid in terms of format but the business requirements are not met.
      *       500:
      *         description: Internal server error.
      */
     router.post('/customers', async (req: Request, res: Response) => {
-        await customerService.create(req.body.id, req.body.email);
-
-        res.status(201).send();
+        try {
+            await customerService.create(req.body.id, req.body.email);
+            res.status(201).send();
+        } catch (error) {
+            if (error instanceof DomainConflictError) {
+                res.status(409).send(error.message);
+                return;
+            }
+            res.status(500).send("Internal Server Error");
+        }
     });
 
     return router;
