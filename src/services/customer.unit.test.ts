@@ -91,6 +91,7 @@ describe('CustomerService', () => {
         await expect(resultPromise).rejects.toThrow("Entity not found with id " + id);
         await expect(resultPromise).rejects.toBeInstanceOf(EntityNotFoundError);
     });
+    
     it('should delete the customer by its id', async () => {
         const id = UUID();
         const email = "email@example.com";
@@ -108,6 +109,7 @@ describe('CustomerService', () => {
         await customerService.delete(id);
         expect(mockRepository.delete).toHaveBeenCalledWith(customer);
     });
+    
     it('delete should throw EntityNotFoundError when repository findById return Promise<void>', async () => {
         const id = UUID();
 
@@ -120,6 +122,7 @@ describe('CustomerService', () => {
         await expect(resultPromise).rejects.toThrow("Entity not found with id " + id);
         await expect(resultPromise).rejects.toBeInstanceOf(EntityNotFoundError);
     });
+    
     it('should add available credit to the customer', async () => {
         const id = UUID();
         const email = "email@example.com";
@@ -143,5 +146,19 @@ describe('CustomerService', () => {
         await customerService.addCredit(id, creditValue);
 
         expect(mockRepository.save).toHaveBeenCalledWith(customerWithAddedCredit);
+    });
+
+    it('addCredit should throw EntityNotFoundError when repository findById return Promise<void>', async () => {
+        const id = UUID();
+        const creditValue = 50;
+        
+        mockRepository.findById.mockImplementationOnce(async () => {
+            return null;
+        });
+
+        const resultPromise = customerService.addCredit(id, creditValue);
+
+        await expect(resultPromise).rejects.toThrow("Entity not found with id " + id);
+        await expect(resultPromise).rejects.toBeInstanceOf(EntityNotFoundError);
     });
 });

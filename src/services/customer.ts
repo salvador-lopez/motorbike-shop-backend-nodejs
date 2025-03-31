@@ -49,11 +49,14 @@ export class CustomerService {
         const entityId = new EntityId(id);
         const credit = new Credit(creditValue);
         const customer = await this.repository.findById(entityId);
-        if (customer) {
-            customer.addCredit(credit);
 
-            await this.repository.save(customer);
+        if (!customer) {
+            throw new EntityNotFoundError(entityId);
         }
+
+        customer.addCredit(credit);
+
+        await this.repository.save(customer);
     }
 }
 
