@@ -120,4 +120,28 @@ describe('CustomerService', () => {
         await expect(resultPromise).rejects.toThrow("Entity not found with id " + id);
         await expect(resultPromise).rejects.toBeInstanceOf(EntityNotFoundError);
     });
+    it('should add available credit to the customer', async () => {
+        const id = UUID();
+        const email = "email@example.com";
+        const entityId = new EntityId(id);
+        const creditValue = 10.2
+
+        let customerWithAddedCredit = Reflect.construct(Customer, [
+            new EntityId(id),
+            new Email(email),
+        ]);
+        (customerWithAddedCredit as any)._availableCredit = new Credit(creditValue);
+
+        mockRepository.findById.mockImplementationOnce(async () => {
+            return new Customer(entityId, new Email(email));
+        });
+
+        mockRepository.save.mockImplementationOnce(async () => {
+            return;
+        });
+
+        await customerService.addCredit(id, creditValue);
+
+        expect(mockRepository.save).toHaveBeenCalledWith(customerWithAddedCredit);
+    });
 });

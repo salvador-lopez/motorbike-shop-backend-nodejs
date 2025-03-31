@@ -27,4 +27,7 @@ export class Credit {
     constructor(value: number) {
         this.value = value;
     }
+    add(credit: Credit) {
+        return new Credit(this.value + credit.value);
+    }
 }

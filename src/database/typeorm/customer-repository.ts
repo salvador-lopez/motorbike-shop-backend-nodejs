@@ -10,11 +10,12 @@ export class TypeOrmCustomerRepository implements CustomerRepository {
     async findById(id: EntityId): Promise<Customer | null> {
         const customerDataModel = await this.typeOrmRepo.findOneBy({ id: id.value });
         if (customerDataModel) {
-            return Reflect.construct(Customer, [
+            let customer= Reflect.construct(Customer, [
                 new EntityId(customerDataModel.id),
                 new Email(customerDataModel.email),
-                new Credit(customerDataModel.availableCredit)
             ]);
+            (customer as any)._availableCredit = customerDataModel.availableCredit;
+            return customer;
         }
 
         return null;
@@ -40,5 +41,9 @@ export class TypeOrmCustomerRepository implements CustomerRepository {
 
     async delete(customer: Customer): Promise<void> {
         await this.typeOrmRepo.delete(customer.id.value);
+    }
+
+    async save(customer: Customer): Promise<void> {
+        return;
     }
 }

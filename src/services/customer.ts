@@ -1,5 +1,5 @@
 import {Customer, CustomerRepository} from "../domain/customer";
-import {EntityId, Email} from "../domain/common";
+import {EntityId, Email, Credit} from "../domain/common";
 import {UniqueConstraintError} from "../database/errors";
 import {DomainConflictError, EntityNotFoundError} from "../domain/errors";
 
@@ -43,6 +43,17 @@ export class CustomerService {
         }
 
         await this.repository.delete(customer);
+    }
+
+    async addCredit(id: string, creditValue: number): Promise<void> {
+        const entityId = new EntityId(id);
+        const credit = new Credit(creditValue);
+        const customer = await this.repository.findById(entityId);
+        if (customer) {
+            customer.addCredit(credit);
+
+            await this.repository.save(customer);
+        }
     }
 }
 
