@@ -16,21 +16,30 @@ export class TypeOrmCustomerRepository implements CustomerRepository {
     async findById(id: EntityId): Promise<Customer | null> {
         const customerDataModel = await this.typeOrmRepo.findOneBy({ id: id.value });
         if (customerDataModel) {
-            let customer= Reflect.construct(Customer, [
-                new EntityId(customerDataModel.id),
-                new Email(customerDataModel.email),
-            ]);
-            (customer as any)._availableCredit = new Credit(customerDataModel.availableCredit);
-            return customer;
+            return this.toDomainEntity(customerDataModel);
         }
 
         return null;
     }
-    
-    async findAll(): Promise<Customer[]> {
-        return [];
+
+    private toDomainEntity(customerDataModel: TypeOrmCustomer): Customer {
+        let customer = Reflect.construct(Customer, [
+            new EntityId(customerDataModel.id),
+            new Email(customerDataModel.email),
+        ]);
+        (customer as any)._availableCredit = new Credit(customerDataModel.availableCredit);
+
+        return customer;
     }
-    
+
+    async findAll(): Promise<Customer[]> {
+        return (await this.typeOrmRepo.find({
+            order: {
+                availableCredit: "DESC",
+            },
+        })).map(typeOrmCustomer => this.toDomainEntity(typeOrmCustomer));
+    }
+
     async create(customer: Customer): Promise<void> {
         try {
             await this.typeOrmRepo.insert(

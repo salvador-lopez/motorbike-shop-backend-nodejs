@@ -39,7 +39,7 @@ describe("Customer Repository Integration Test", () => {
             expect(customerDataModel.availableCredit).toBe(0);
         }
     });
-    
+
     it("should save a customer", async () => {
         const entityId = new EntityId(UUID());
         const email = new Email("email@example.com");
@@ -56,7 +56,7 @@ describe("Customer Repository Integration Test", () => {
             expect(customerDataModel.availableCredit).toBe(0);
         }
     });
-    
+
     it("should update the existent user when call to save", async () => {
         const entityId = new EntityId(UUID());
         const email = new Email("email@example.com");
@@ -66,9 +66,9 @@ describe("Customer Repository Integration Test", () => {
 
         const newCreditValue = 10.5;
         customer.addCredit(new Credit(newCreditValue));
-        
+
         await customerRepo.save(customer);
-        
+
         const customerDataModel = await typeOrmRepo.findOneBy({ id: entityId.value });
 
         expect(customerDataModel).not.toBeNull();
@@ -83,7 +83,7 @@ describe("Customer Repository Integration Test", () => {
         const customerAEntityId = new EntityId(UUID());
         const customerAEmail = new Email("customer-a-email@example.com");
         let customerA = new Customer(customerAEntityId, customerAEmail);
-        
+
         const customerBEntityId = new EntityId(UUID());
         const customerBEmail = new Email("customer-b-email@example.com");
         const customerB = new Customer(customerBEntityId, customerBEmail);
@@ -92,7 +92,7 @@ describe("Customer Repository Integration Test", () => {
         await customerRepo.create(customerB);
 
         customerA = new Customer(customerAEntityId, customerBEmail);
-        
+
         const resultPromise = customerRepo.save(customerA);
 
         await expect(resultPromise)
@@ -100,7 +100,7 @@ describe("Customer Repository Integration Test", () => {
         await expect(resultPromise)
             .rejects.toBeInstanceOf(UniqueConstraintError);
     });
-    
+
     it("should throw an unique constraint database error when try to create customer with same id twice", async () => {
         const entityId = new EntityId(UUID());
         const email = new Email("email@example.com");
@@ -117,7 +117,7 @@ describe("Customer Repository Integration Test", () => {
         await expect(resultPromise)
             .rejects.toBeInstanceOf(UniqueConstraintError);
     });
-    
+
     it("should throw an unique constraint database error when try to create customer with same email twice", async () => {
         const entityId = new EntityId(UUID());
         const newEntityId = new EntityId(UUID());
@@ -134,7 +134,7 @@ describe("Customer Repository Integration Test", () => {
         await expect(resultPromise)
             .rejects.toBeInstanceOf(UniqueConstraintError);
     });
-    
+
     it("should find a customer by it´s id", async () => {
         const entityId = new EntityId(UUID());
         const email = new Email("email@example.com");
@@ -151,14 +151,14 @@ describe("Customer Repository Integration Test", () => {
             expect(customer.availableCredit).toEqual(new Credit(0));
         }
     });
-    
+
     it("should return void when find a customer by it´s but the customer not found", async () => {
         const entityId = new EntityId(UUID());
 
         const customer = await customerRepo.findById(entityId);
         expect(customer).toBeNull();
     });
-    
+
     it("should delete a customer", async () => {
         const entityId = new EntityId(UUID());
         const email = new Email("email@example.com");
@@ -172,5 +172,21 @@ describe("Customer Repository Integration Test", () => {
         await customerRepo.delete(customer)
         customerDataModel = await typeOrmRepo.findOneBy({ id: entityId.value });
         expect(customerDataModel).toBeNull();
+    });
+
+    it("should find all customers ordered by availableCredit DESC", async () => {
+        const customerCredit = new Credit(10.5);
+        const otherCustomerCredit = new Credit(24);
+        const customerDataModel = new TypeOrmCustomer(UUID(), "email@example.com", customerCredit.value);
+        const otherCustomerDataModel = new TypeOrmCustomer(UUID(), "other-email@example.com", otherCustomerCredit.value);
+
+        await typeOrmRepo.insert(customerDataModel);
+        await typeOrmRepo.insert(otherCustomerDataModel);
+
+        const customers = await customerRepo.findAll();
+
+        expect(customers).toHaveLength(2);
+        expect(customers[0].availableCredit).toEqual(otherCustomerCredit);
+        expect(customers[1].availableCredit).toEqual(customerCredit);
     });
 });
