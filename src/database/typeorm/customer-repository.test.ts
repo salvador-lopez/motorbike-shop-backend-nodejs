@@ -56,4 +56,20 @@ describe("Customer Repository Integration Test", () => {
         await expect(resultPromise)
             .rejects.toBeInstanceOf(UniqueConstraintError);
     });
+    it("should throw an unique constraint database error when try to create customer with same email twice", async () => {
+        const entityId = new EntityId(UUID());
+        const newEntityId = new EntityId(UUID());
+        const email = new Email("email@example.com");
+        const customer = new Customer(entityId, email);
+        const customerWithSameEmail = new Customer(newEntityId, email);
+
+        await customerRepo.create(customer);
+
+        const resultPromise = customerRepo.create(customerWithSameEmail);
+
+        await expect(resultPromise)
+            .rejects.toThrow("SQLITE_CONSTRAINT: UNIQUE constraint failed: customers.email");
+        await expect(resultPromise)
+            .rejects.toBeInstanceOf(UniqueConstraintError);
+    });
 });
