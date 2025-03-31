@@ -34,6 +34,14 @@ export class CustomerService {
         return new CustomerDTO(customer.id.value, customer.email.value, customer.availableCredit.value);
     }
 
+    async getAll(): Promise<CustomerDTO[]> {
+        const customers = await this.repository.findAll();
+
+        return customers.map(
+            customer => new CustomerDTO(customer.id.value, customer.email.value, customer.availableCredit.value)
+        );
+    }
+
     async delete(id: string): Promise<void> {
         const entityId = new EntityId(id);
         const customer = await this.repository.findById(entityId);

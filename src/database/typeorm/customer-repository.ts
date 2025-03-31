@@ -7,6 +7,12 @@ import {Credit, Email, EntityId} from "../../domain/common";
 
 
 export class TypeOrmCustomerRepository implements CustomerRepository {
+    private typeOrmRepo: Repository<TypeOrmCustomer>;
+
+    constructor(typeOrmRepo: Repository<TypeOrmCustomer>) {
+        this.typeOrmRepo = typeOrmRepo;
+    }
+
     async findById(id: EntityId): Promise<Customer | null> {
         const customerDataModel = await this.typeOrmRepo.findOneBy({ id: id.value });
         if (customerDataModel) {
@@ -20,12 +26,11 @@ export class TypeOrmCustomerRepository implements CustomerRepository {
 
         return null;
     }
-    private typeOrmRepo: Repository<TypeOrmCustomer>;
-
-    constructor(typeOrmRepo: Repository<TypeOrmCustomer>) {
-        this.typeOrmRepo = typeOrmRepo;
+    
+    async findAll(): Promise<Customer[]> {
+        return [];
     }
-
+    
     async create(customer: Customer): Promise<void> {
         try {
             await this.typeOrmRepo.insert(
