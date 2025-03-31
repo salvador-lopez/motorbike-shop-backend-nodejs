@@ -25,13 +25,21 @@ export class CustomerService {
 
     async get(id: string): Promise<CustomerDTO> {
         const entityId = new EntityId(id);
-        const customer = await this.repository.findById(new EntityId(id));
+        const customer = await this.repository.findById(entityId);
 
         if (!customer) {
             throw new EntityNotFoundError(entityId);
         }
 
         return new CustomerDTO(customer.id.value, customer.email.value, customer.availableCredit.value);
+    }
+
+    async delete(id: string): Promise<void> {
+        const entityId = new EntityId(id);
+        const customer = await this.repository.findById(entityId);
+        if (customer) {
+            await this.repository.delete(customer);
+        }
     }
 }
 

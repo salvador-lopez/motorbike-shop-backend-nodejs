@@ -3,6 +3,7 @@ import {EntityId, Email, Credit} from "./common";
 export interface CustomerRepository {
     create(customer: Customer): Promise<void>;
     findById(id: EntityId): Promise<Customer | void>;
+    delete(customer: Customer): Promise<void>;
 }
 
 export class Customer {

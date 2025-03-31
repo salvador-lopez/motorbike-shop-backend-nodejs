@@ -66,14 +66,17 @@ describe('CustomerService', () => {
         const email = "email@example.com";
         const availableCredit = 0;
 
+        const entityId = new EntityId(id);
+
         mockRepository.findById.mockImplementationOnce(async () => {
-            return new Customer(new EntityId(id), new Email(email));
+            return new Customer(entityId, new Email(email));
         });
 
         const expectedCustomerDTO = new CustomerDTO(id, email, availableCredit);
         const customerDTOFound = await customerService.get(id);
 
         expect(customerDTOFound).toEqual(expectedCustomerDTO);
+        expect(mockRepository.findById).toHaveBeenCalledWith(entityId);
     });
 
     it('get should throw EntityNotFoundError when repository findById return Promise<void>', async () => {
@@ -87,5 +90,22 @@ describe('CustomerService', () => {
 
         await expect(resultPromise).rejects.toThrow("Entity not found with id " + id);
         await expect(resultPromise).rejects.toBeInstanceOf(EntityNotFoundError);
+    });
+    it('should delete the customer by its id', async () => {
+        const id = UUID();
+        const email = "email@example.com";
+        const entityId = new EntityId(id);
+
+        const customer = new Customer(entityId, new Email(email));
+
+        mockRepository.findById.mockImplementationOnce(async () => {
+            return customer;
+        });
+        mockRepository.delete.mockImplementationOnce(async () => {
+            return;
+        });
+
+        await customerService.delete(id);
+        expect(mockRepository.delete).toHaveBeenCalledWith(customer);
     });
 });

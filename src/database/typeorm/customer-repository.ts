@@ -38,4 +38,7 @@ export class TypeOrmCustomerRepository implements CustomerRepository {
         }
     }
 
+    async delete(customer: Customer): Promise<void> {
+        return;
+    }
 }
