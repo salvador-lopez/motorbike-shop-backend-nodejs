@@ -19,31 +19,31 @@ describe('CustomerService', () => {
         const expectedCustomer = new Customer(new EntityId(id), new Email(email));
         expect(expectedCustomer.availableCredit.value).toBe(0);
 
-        mockRepository.save.mockImplementationOnce(async () => {});
+        mockRepository.create.mockImplementationOnce(async () => {});
 
         await expect(customerService.create(id, email)).resolves.toBeUndefined();
-        expect(mockRepository.save).toHaveBeenCalledWith(expectedCustomer);
+        expect(mockRepository.create).toHaveBeenCalledWith(expectedCustomer);
     });
 
     it('should throw DomainConflictError when uuid is invalid', async () => {
         const id = "invalid-uuid";
         const email = "email@example.com";
-        mockRepository.save.mockImplementationOnce(async () => {});
+        mockRepository.create.mockImplementationOnce(async () => {});
 
         const resultPromise = customerService.create(id, email);
 
-        await expect(resultPromise).rejects.toThrowError("Invalid UUID: invalid-uuid");
+        await expect(resultPromise).rejects.toThrow("Invalid UUID: invalid-uuid");
         await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
     });
 
     it('should throw DomainConflictError when email is invalid', async () => {
         const id = UUID();
         const email = "invalid-email";
-        mockRepository.save.mockImplementationOnce(async () => {});
+        mockRepository.create.mockImplementationOnce(async () => {});
 
         const resultPromise = customerService.create(id, email);
 
-        await expect(resultPromise).rejects.toThrowError("Invalid email: invalid-email");
+        await expect(resultPromise).rejects.toThrow("Invalid email: invalid-email");
         await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
     });
 });
