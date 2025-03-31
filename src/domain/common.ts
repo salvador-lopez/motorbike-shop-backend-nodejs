@@ -25,6 +25,9 @@ export class Email {
 export class Credit {
     readonly value: number;
     constructor(value: number) {
+        if (value < 0) {
+            throw new DomainConflictError("Credit cannot be negative");
+        }
         this.value = value;
     }
     add(credit: Credit) {

@@ -161,4 +161,20 @@ describe('CustomerService', () => {
         await expect(resultPromise).rejects.toThrow("Entity not found with id " + id);
         await expect(resultPromise).rejects.toBeInstanceOf(EntityNotFoundError);
     });
+
+    it('addCredit should throw DomainConflictError when try to add negative credit', async () => {
+        const id = UUID();
+        const entityId = new EntityId(id);
+        const email = "email@example.com";
+        const creditValue = -10;
+
+        mockRepository.findById.mockImplementationOnce(async () => {
+            return new Customer(entityId, new Email(email));
+        });
+
+        const resultPromise = customerService.addCredit(id, creditValue);
+
+        await expect(resultPromise).rejects.toThrow("Credit cannot be negative");
+        await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
+    });
 });
