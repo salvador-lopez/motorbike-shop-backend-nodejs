@@ -112,6 +112,40 @@ const createRouter = (customerService: CustomerService): Router => {
         }
     });
 
+    /**
+     * @openapi
+     * /customers:
+     *   get:
+     *     summary: Get all customers
+     *     description: Retrieves a list of all customers.
+     *     responses:
+     *       200:
+     *         description: Successfully retrieved the list of customers.
+     *         content:
+     *           application/json:
+     *             schema:
+     *               type: array
+     *               items:
+     *                 type: object
+     *                 properties:
+     *                   id:
+     *                     type: string
+     *                     format: uuid
+     *                     description: The unique identifier of the customer.
+     *                     example: "9f2f9e08-93b6-47c1-a54e-5cffc6f59e4b"
+     *                   email:
+     *                     type: string
+     *                     format: email
+     *                     description: The email address of the customer.
+     *                     example: "customer@example.com"
+     *                   available_credit:
+     *                     type: number
+     *                     format: float
+     *                     description: The available credit for the customer.
+     *                     example: 150.75
+     *       500:
+     *         description: Internal server error.
+     */
     router.get('/customers', async (req: Request, res: Response) => {
         try {
             const customerDTOs: CustomerDTO[] = await customerService.getAll();
