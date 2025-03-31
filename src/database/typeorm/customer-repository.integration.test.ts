@@ -1,10 +1,9 @@
 import {testDataSource} from "./data-source";
-import {EntityId, Email} from "../../domain/common";
+import {EntityId, Email, Credit} from "../../domain/common";
 import {Customer} from "../../domain/customer";
 import { v4 as UUID} from 'uuid';
 import {TypeOrmCustomerRepository} from "./customer-repository";
 import {TypeOrmCustomer} from "./data-model";
-import {QueryFailedError} from "typeorm";
 import {UniqueConstraintError} from "../errors";
 
 let customerRepo: TypeOrmCustomerRepository;
@@ -71,5 +70,21 @@ describe("Customer Repository Integration Test", () => {
             .rejects.toThrow("SQLITE_CONSTRAINT: UNIQUE constraint failed: customers.email");
         await expect(resultPromise)
             .rejects.toBeInstanceOf(UniqueConstraintError);
+    });
+    it("should find a customer by it´s id", async () => {
+        const entityId = new EntityId(UUID());
+        const email = new Email("email@example.com");
+        const customerDataModel = new TypeOrmCustomer(entityId.value, email.value, 0);
+
+        await typeOrmRepo.insert(customerDataModel);
+
+        const customer = await customerRepo.findById(entityId);
+
+        expect(customer).not.toBeUndefined();
+        if (customer !== undefined) {
+            expect(customer.id).toEqual(entityId);
+            expect(customer.email).toEqual(email);
+            expect(customer.availableCredit).toEqual(new Credit(0));
+        }
     });
 });

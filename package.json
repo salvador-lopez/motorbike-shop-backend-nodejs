@@ -5,6 +5,9 @@
   "main": "dist/app.js",
   "scripts": {
     "test": "jest",
+    "test:unit": "jest --testMatch='**/*.unit.test.ts'",
+    "test:integration": "jest --testMatch='**/*.integration.test.ts'",
+    "test:acceptance": "jest --testMatch='**/*.acceptance.test.ts'",
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "ts-node-dev --inspect=0.0.0.0:9229 --respawn --transpile-only src/server.ts"

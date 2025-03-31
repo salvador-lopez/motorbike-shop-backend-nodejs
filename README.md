@@ -20,9 +20,18 @@ then you can access the api in http://localhost:3000/api
 and the swagger api doc in http://localhost:3000/api-docs
 
 ### running tests
+All the test suites:
 ```bash
 docker compose exec api npm test
 ```
+
+Only a specific the test suite:
+```bash
+docker compose exec api npm run test:unit
+docker compose exec api npm run test:integration
+docker compose exec api npm run test:acceptance
+```
+
 ### debug
 If you use Webstorm you can run/debug the motorbike shop api using [this Run Configuration](https://github.com/salvador-lopez/motorbike-shop-backend-nodejs/blob/main/.idea/runConfigurations/run_motorbike_api.xml)
 More info [here](https://www.jetbrains.com/help/webstorm/run-debug-configuration-node-js-remote-debug.html)

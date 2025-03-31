@@ -3,11 +3,20 @@ import {Repository} from "typeorm/repository/Repository";
 import {TypeOrmCustomer} from "./data-model";
 import {QueryFailedError} from "typeorm";
 import {UniqueConstraintError} from "../errors";
-import {EntityId} from "../../domain/common";
+import {Credit, Email, EntityId} from "../../domain/common";
 
 
 export class TypeOrmCustomerRepository implements CustomerRepository {
-    findById(id: EntityId): Promise<Customer | void> {
+    async findById(id: EntityId): Promise<Customer | void> {
+        const customerDataModel = await this.typeOrmRepo.findOneBy({ id: id.value });
+        if (customerDataModel) {
+            return Reflect.construct(Customer, [
+                new EntityId(customerDataModel.id),
+                new Email(customerDataModel.email),
+                new Credit(customerDataModel.availableCredit)
+            ]);
+        }
+
         return Promise.resolve(undefined);
     }
     private typeOrmRepo: Repository<TypeOrmCustomer>;
