@@ -31,15 +31,25 @@ export class CustomerService {
             throw new EntityNotFoundError(entityId);
         }
 
-        return new CustomerDTO(customer.id.value, customer.email.value);
+        return new CustomerDTO(customer.id.value, customer.email.value, customer.availableCredit.value);
     }
 }
 
 export class CustomerDTO {
     readonly id: string;
     readonly email: string;
-    constructor(id: string, email: string) {
+    readonly availableCredit: number;
+    constructor(id: string, email: string, availableCredit: number) {
         this.id = id;
         this.email = email;
+        this.availableCredit = availableCredit;
+    }
+
+    toJSON(): string {
+        return JSON.stringify({
+            id: this.id,
+            email: this.email,
+            available_credit: this.availableCredit
+        });
     }
 }

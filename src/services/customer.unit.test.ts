@@ -64,12 +64,13 @@ describe('CustomerService', () => {
     it('should get the customer by its id', async () => {
         const id = UUID();
         const email = "email@example.com";
+        const availableCredit = 0;
 
         mockRepository.findById.mockImplementationOnce(async () => {
             return new Customer(new EntityId(id), new Email(email));
         });
 
-        const expectedCustomerDTO = new CustomerDTO(id, email);
+        const expectedCustomerDTO = new CustomerDTO(id, email, availableCredit);
         const customerDTOFound = await customerService.get(id);
 
         expect(customerDTOFound).toEqual(expectedCustomerDTO);

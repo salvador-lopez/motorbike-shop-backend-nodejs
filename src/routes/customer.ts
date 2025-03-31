@@ -54,6 +54,11 @@ const createRouter = (customerService: CustomerService): Router => {
         }
     });
 
+    router.get('/customers/:id', async (req: Request, res: Response) => {
+            const customerDTO = await customerService.get(req.params.id);
+            res.status(200).send(customerDTO.toJSON());
+    });
+
     return router;
 };
 
