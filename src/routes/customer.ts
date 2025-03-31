@@ -3,7 +3,7 @@ import {getDataSource} from "../database/typeorm/data-source";
 import {CustomerService} from "../services/customer";
 import {TypeOrmCustomer} from "../database/typeorm/data-model";
 import {TypeOrmCustomerRepository} from "../database/typeorm/customer-repository";
-import {DomainConflictError} from "../domain/errors";
+import {DomainConflictError, EntityNotFoundError} from "../domain/errors";
 
 const createRouter = (customerService: CustomerService): Router => {
     const router = Router();
@@ -55,8 +55,16 @@ const createRouter = (customerService: CustomerService): Router => {
     });
 
     router.get('/customers/:id', async (req: Request, res: Response) => {
+        try {
             const customerDTO = await customerService.get(req.params.id);
             res.status(200).send(customerDTO.toJSON());
+        } catch (error) {
+            if (error instanceof EntityNotFoundError) {
+                res.status(404).send(error.message);
+                return;
+            }
+            res.status(500).send("Internal Server Error");
+        }
     });
 
     return router;
