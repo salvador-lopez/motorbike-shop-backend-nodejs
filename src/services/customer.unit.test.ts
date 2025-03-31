@@ -83,7 +83,7 @@ describe('CustomerService', () => {
         const id = UUID();
 
         mockRepository.findById.mockImplementationOnce(async () => {
-            return;
+            return null;
         });
 
         const resultPromise = customerService.get(id);
@@ -112,7 +112,7 @@ describe('CustomerService', () => {
         const id = UUID();
 
         mockRepository.findById.mockImplementationOnce(async () => {
-            return;
+            return null;
         });
 
         const resultPromise = customerService.delete(id);

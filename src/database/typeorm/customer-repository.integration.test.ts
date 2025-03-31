@@ -30,7 +30,7 @@ describe("Customer Repository Integration Test", () => {
 
         await customerRepo.create(customer);
 
-        let customerDataModel = await typeOrmRepo.findOneBy({ id: entityId.value });
+        const customerDataModel = await typeOrmRepo.findOneBy({ id: entityId.value });
 
         expect(customerDataModel).not.toBeNull();
         if (customerDataModel !== null) {
@@ -81,7 +81,7 @@ describe("Customer Repository Integration Test", () => {
         const customer = await customerRepo.findById(entityId);
 
         expect(customer).not.toBeUndefined();
-        if (customer !== undefined) {
+        if (customer) {
             expect(customer.id).toEqual(entityId);
             expect(customer.email).toEqual(email);
             expect(customer.availableCredit).toEqual(new Credit(0));
@@ -91,6 +91,20 @@ describe("Customer Repository Integration Test", () => {
         const entityId = new EntityId(UUID());
 
         const customer = await customerRepo.findById(entityId);
-        expect(customer).toBeUndefined();
+        expect(customer).toBeNull();
+    });
+    it("should delete a customer", async () => {
+        const entityId = new EntityId(UUID());
+        const email = new Email("email@example.com");
+        let customerDataModel: TypeOrmCustomer | null = new TypeOrmCustomer(entityId.value, email.value, 0);
+
+        await typeOrmRepo.insert(customerDataModel)
+        customerDataModel = await typeOrmRepo.findOneBy({ id: entityId.value });
+        expect(customerDataModel).not.toBeNull();
+
+        const customer = new Customer(entityId, email);
+        await customerRepo.delete(customer)
+        customerDataModel = await typeOrmRepo.findOneBy({ id: entityId.value });
+        expect(customerDataModel).toBeNull();
     });
 });
