@@ -10,7 +10,7 @@
     "test:acceptance": "jest --testMatch='**/*.acceptance.test.ts'",
     "build": "tsc",
     "start": "node dist/server.js",
-    "dev": "ts-node-dev --inspect=0.0.0.0:9229 --respawn --transpile-only src/server.ts"
+    "dev": "serverless offline"
   },
   "repository": {
     "type": "git",
@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/salvador-lopez/motorbike-shop-backend-nodejs#readme",
   "dependencies": {
+    "@vendia/serverless-express": "^4.12.6",
     "express": "^4.21.2",
     "reflect-metadata": "^0.2.2",
     "sqlite3": "^5.1.7",
