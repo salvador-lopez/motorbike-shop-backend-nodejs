@@ -2,9 +2,8 @@ import {CustomerDTO, CustomerService} from './customer';
 import { Customer, CustomerRepository } from '../domain/customer';
 import {v4 as UUID} from "uuid";
 import { mock, mockReset } from 'jest-mock-extended';
-import {DomainConflictError, EntityNotFoundError} from "../domain/errors";
+import {DomainConflictError, EntityAlreadyExistError, EntityNotFoundError} from "../domain/errors";
 import {EntityId, Email, Credit} from "../domain/common";
-import {UniqueConstraintError} from "../database/errors";
 
 describe('CustomerService', () => {
     const mockRepository = mock<CustomerRepository>();
@@ -48,16 +47,17 @@ describe('CustomerService', () => {
         await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
     });
 
-    it('create should throw DomainConflictError when repository throw UniqueConstraintError', async () => {
+    it('create should propagate the DomainConflictError thrown by the repository', async () => {
         const id = UUID();
         const email = "email@example.com";
+        const expectedErrorMsg = "Test domain error message";
         mockRepository.create.mockImplementationOnce(async () => {
-            throw new UniqueConstraintError("unique constraint error");
+            throw new DomainConflictError(expectedErrorMsg);
         });
 
         const resultPromise = customerService.create(id, email);
 
-        await expect(resultPromise).rejects.toThrow("unique constraint error");
+        await expect(resultPromise).rejects.toThrow(expectedErrorMsg);
         await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
     });
 

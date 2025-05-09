@@ -4,7 +4,7 @@ import {Customer} from "../../domain/customer";
 import { v4 as UUID} from 'uuid';
 import {TypeOrmCustomerRepository} from "./customer-repository";
 import {TypeOrmCustomer} from "./data-model";
-import {UniqueConstraintError} from "../errors";
+import {DomainConflictError, EntityAlreadyExistError} from "../../domain/errors";
 
 let customerRepo: TypeOrmCustomerRepository;
 const typeOrmRepo = testDataSource.getRepository(TypeOrmCustomer);
@@ -79,7 +79,10 @@ describe("Customer Repository Integration Test", () => {
         }
     });
 
-    it("should throw an unique constraint database error when try to save the customer with an email assigned to other customer", async () => {
+    const buildEntityAlreadyExistMsg = (id: EntityId): string =>
+        `Entity with id ${id.value} cannot be created because it already exists with same id and/or unique constraint.`;
+
+    it("should throw an EntityAlreadyExistError when try to save the customer with an email assigned to other customer", async () => {
         const customerAEntityId = new EntityId(UUID());
         const customerAEmail = new Email("customer-a-email@example.com");
         let customerA = new Customer(customerAEntityId, customerAEmail);
@@ -96,12 +99,14 @@ describe("Customer Repository Integration Test", () => {
         const resultPromise = customerRepo.save(customerA);
 
         await expect(resultPromise)
-            .rejects.toThrow("SQLITE_CONSTRAINT: UNIQUE constraint failed: customers.email");
+            .rejects.toThrow(buildEntityAlreadyExistMsg(customerAEntityId));
         await expect(resultPromise)
-            .rejects.toBeInstanceOf(UniqueConstraintError);
+            .rejects.toBeInstanceOf(EntityAlreadyExistError);
+        await expect(resultPromise)
+            .rejects.toBeInstanceOf(DomainConflictError);
     });
 
-    it("should throw an unique constraint database error when try to create customer with same id twice", async () => {
+    it("should throw an EntityAlreadyExistError when try to create customer with same id twice", async () => {
         const entityId = new EntityId(UUID());
         const email = new Email("email@example.com");
         const newEmail = new Email("new-email@example.com");
@@ -113,12 +118,14 @@ describe("Customer Repository Integration Test", () => {
         const resultPromise = customerRepo.create(customerWithNewEmail);
 
         await expect(resultPromise)
-            .rejects.toThrow("SQLITE_CONSTRAINT: UNIQUE constraint failed: customers.id");
+            .rejects.toThrow(buildEntityAlreadyExistMsg(entityId));
         await expect(resultPromise)
-            .rejects.toBeInstanceOf(UniqueConstraintError);
+            .rejects.toBeInstanceOf(EntityAlreadyExistError);
+        await expect(resultPromise)
+            .rejects.toBeInstanceOf(DomainConflictError);
     });
 
-    it("should throw an unique constraint database error when try to create customer with same email twice", async () => {
+    it("should throw an EntityAlreadyExistError when try to create customer with same email twice", async () => {
         const entityId = new EntityId(UUID());
         const newEntityId = new EntityId(UUID());
         const email = new Email("email@example.com");
@@ -130,9 +137,11 @@ describe("Customer Repository Integration Test", () => {
         const resultPromise = customerRepo.create(customerWithSameEmail);
 
         await expect(resultPromise)
-            .rejects.toThrow("SQLITE_CONSTRAINT: UNIQUE constraint failed: customers.email");
+            .rejects.toThrow(buildEntityAlreadyExistMsg(newEntityId));
         await expect(resultPromise)
-            .rejects.toBeInstanceOf(UniqueConstraintError);
+            .rejects.toBeInstanceOf(EntityAlreadyExistError);
+        await expect(resultPromise)
+            .rejects.toBeInstanceOf(DomainConflictError);
     });
 
     it("should find a customer by it´s id", async () => {

@@ -1,7 +1,5 @@
 import {Customer, CustomerRepository} from "../domain/customer";
 import {EntityId, Email, Credit} from "../domain/common";
-import {UniqueConstraintError} from "../database/errors";
-import {DomainConflictError, EntityNotFoundError} from "../domain/errors";
 
 export class CustomerService {
     private repository: CustomerRepository;
@@ -13,14 +11,7 @@ export class CustomerService {
     async create(id: string, email: string): Promise<void> {
         const newCustomer = new Customer(new EntityId(id), new Email(email));
 
-        try {
-            await this.repository.create(newCustomer);
-        } catch (error) {
-            if (error instanceof UniqueConstraintError) {
-                throw new DomainConflictError(error.message);
-            }
-            throw error;
-        }
+        await this.repository.create(newCustomer);
     }
 
     async get(id: string): Promise<CustomerDTO> {

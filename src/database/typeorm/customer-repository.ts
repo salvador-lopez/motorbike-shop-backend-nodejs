@@ -2,8 +2,8 @@ import {Customer, CustomerRepository} from "../../domain/customer";
 import {Repository} from "typeorm/repository/Repository";
 import {TypeOrmCustomer} from "./data-model";
 import {QueryFailedError} from "typeorm";
-import {UniqueConstraintError} from "../errors";
 import {Credit, Email, EntityId} from "../../domain/common";
+import {EntityAlreadyExistError} from "../../domain/errors";
 
 
 export class TypeOrmCustomerRepository implements CustomerRepository {
@@ -47,7 +47,7 @@ export class TypeOrmCustomerRepository implements CustomerRepository {
             );
         } catch (error) {
             if (error instanceof QueryFailedError && error.message.includes("UNIQUE constraint failed")) {
-                throw new UniqueConstraintError(error.message);
+                throw new EntityAlreadyExistError(customer.id);
             }
             throw error;
         }
@@ -60,7 +60,7 @@ export class TypeOrmCustomerRepository implements CustomerRepository {
             );
         } catch (error) {
             if (error instanceof QueryFailedError && error.message.includes("UNIQUE constraint failed")) {
-                throw new UniqueConstraintError(error.message);
+                throw new EntityAlreadyExistError(customer.id);
             }
             throw error;
         }
