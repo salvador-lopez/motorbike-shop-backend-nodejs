@@ -19,20 +19,56 @@ afterAll(async () => {
     await testDataSource.destroy();
 });
 
+const customersApiPath = '/api/customers';
+
 describe('POST /api/customers', () => {
     it('should respond with 201 resource created', async () => {
         const response = await request(app)
-            .post('/api/customers')
+            .post(customersApiPath)
             .send({ id: UUID(), email: 'customer@example.com' });
         expect(response.status).toBe(201);
         expect(response.text).toBe('');
     });
-    it('should respond with 409 domain conflict', async () => {
+    it('should respond with 400 bad request', async () => {
         const response = await request(app)
-            .post('/api/customers')
+            .post(customersApiPath)
             .send({ id: UUID(), email: 'invalid-email-example.com' });
         expect(response.status).toBe(400);
         expect(response.text).toBe("Invalid email: invalid-email-example.com");
+    });
+    it('should respond with 400 bad request when execute the endpoint twice with same ID', async () => {
+        const id = UUID();
+        const email = 'customer@example.com';
+        const anotherEmail = 'another-customer@example.com';
+        let response = await request(app)
+            .post(customersApiPath)
+            .send({ id: id, email: email });
+        expect(response.status).toBe(201);
+
+        response = await request(app)
+            .post(customersApiPath)
+            .send({ id: id, email: anotherEmail });
+        expect(response.status).toBe(400);
+        expect(response.text).toBe(
+            `Entity with id ${id} cannot be created because it already exists with same id and/or unique constraint.`
+        );
+    });
+    it('should respond with 400 bad request when execute the endpoint twice with same email', async () => {
+        const id = UUID();
+        const anotherId = UUID();
+        const email = 'customer@example.com';
+        let response = await request(app)
+            .post(customersApiPath)
+            .send({ id: id, email: email });
+        expect(response.status).toBe(201);
+
+        response = await request(app)
+            .post(customersApiPath)
+            .send({ id: anotherId, email: email });
+        expect(response.status).toBe(400);
+        expect(response.text).toBe(
+            `Entity with id ${anotherId} cannot be created because it already exists with same id and/or unique constraint.`
+        );
     });
 });
 
@@ -41,9 +77,9 @@ describe('GET /api/customers/:id', () => {
         const id = UUID();
         const email = 'customer@example.com';
         const availableCredit = 0;
-        await request(app).post('/api/customers').send({ id: id, email: email });
+        await request(app).post(customersApiPath).send({ id: id, email: email });
 
-        const response = await request(app).get(`/api/customers/${id}`).send();
+        const response = await request(app).get(`${customersApiPath}/${id}`).send();
         expect(response.status).toBe(200);
 
         const expectedResponseText = JSON.stringify({ id: id, email: email, available_credit: availableCredit });
@@ -53,14 +89,14 @@ describe('GET /api/customers/:id', () => {
     it('should respond with 400 bad request', async () => {
         const id = "invalid-uuid";
 
-        const response = await request(app).get(`/api/customers/${id}`).send();
+        const response = await request(app).get(`${customersApiPath}/${id}`).send();
         expect(response.status).toBe(400);
         expect(response.text).toBe(`Invalid UUID: ${id}`);
     });
     it('should respond with 404 not found', async () => {
         const id = UUID();
 
-        const response = await request(app).get(`/api/customers/${id}`).send();
+        const response = await request(app).get(`${customersApiPath}/${id}`).send();
         expect(response.status).toBe(404);
         expect(response.text).toBe(`Entity not found with id ${id}`);
     });
@@ -75,11 +111,11 @@ describe('GET /api/customers', () => {
         const credit = 0;
         const otherCredit = 10.4;
 
-        await request(app).post('/api/customers').send({ id: id, email: email });
-        await request(app).post('/api/customers').send({ id: otherId, email: otherEmail });
-        await request(app).patch(`/api/customers/${otherId}/add-credit`).send({ credit: 10.4 });
+        await request(app).post(customersApiPath).send({ id: id, email: email });
+        await request(app).post(customersApiPath).send({ id: otherId, email: otherEmail });
+        await request(app).patch(`${customersApiPath}/${otherId}/add-credit`).send({ credit: 10.4 });
 
-        const response = await request(app).get('/api/customers').send();
+        const response = await request(app).get(customersApiPath).send();
         expect(response.status).toBe(200);
 
         const expectedResponseText = JSON.stringify([
@@ -94,10 +130,10 @@ describe('GET /api/customers', () => {
 describe('DELETE /api/customers/:id', () => {
     it('should respond with 200 ok', async () => {
         const id = UUID();
-        await request(app).post('/api/customers').send({ id: id, email: 'customer@example.com' });
+        await request(app).post(customersApiPath).send({ id: id, email: 'customer@example.com' });
 
         const response = await request(app)
-            .delete(`/api/customers/${id}`)
+            .delete(`${customersApiPath}/${id}`)
             .send();
         expect(response.status).toBe(200);
         expect(response.text).toBe('');
@@ -105,7 +141,7 @@ describe('DELETE /api/customers/:id', () => {
     it('should respond with 404 not found', async () => {
         const id = UUID();
 
-        const response = await request(app).delete(`/api/customers/${id}`).send();
+        const response = await request(app).delete(`${customersApiPath}/${id}`).send();
         expect(response.status).toBe(404);
         expect(response.text).toBe(`Entity not found with id ${id}`);
     });
@@ -117,9 +153,9 @@ describe('PATCH /api/customers/:id/add-credit', () => {
         const credit = 10.5;
         const email = 'customer@example.com';
 
-        await request(app).post('/api/customers').send({ id: id, email: email });
+        await request(app).post(customersApiPath).send({ id: id, email: email });
 
-        const response = await request(app).patch(`/api/customers/${id}/add-credit`).send({ credit: credit });
+        const response = await request(app).patch(`${customersApiPath}/${id}/add-credit`).send({ credit: credit });
 
         expect(response.status).toBe(200);
         expect(response.text).toBe('');
@@ -128,7 +164,7 @@ describe('PATCH /api/customers/:id/add-credit', () => {
         const id = UUID();
         const credit = 20;
 
-        const response = await request(app).patch(`/api/customers/${id}/add-credit`).send({ credit: credit });
+        const response = await request(app).patch(`${customersApiPath}/${id}/add-credit`).send({ credit: credit });
         expect(response.status).toBe(404);
         expect(response.text).toBe(`Entity not found with id ${id}`);
     });
@@ -136,7 +172,7 @@ describe('PATCH /api/customers/:id/add-credit', () => {
         const id = UUID();
         const credit = -20;
 
-        const response = await request(app).patch(`/api/customers/${id}/add-credit`).send({ credit: credit });
+        const response = await request(app).patch(`${customersApiPath}/${id}/add-credit`).send({ credit: credit });
         expect(response.status).toBe(400);
         expect(response.text).toBe("Credit cannot be negative");
     });
