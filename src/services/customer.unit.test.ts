@@ -2,7 +2,7 @@ import {CustomerDTO, CustomerService} from './customer';
 import { Customer, CustomerRepository } from '../domain/customer';
 import {v4 as UUID} from "uuid";
 import { mock, mockReset } from 'jest-mock-extended';
-import {DomainConflictError, EntityAlreadyExistError, EntityNotFoundError} from "../domain/errors";
+import {DomainConflictError, EntityNotFoundError} from "../domain/errors";
 import {EntityId, Email, Credit} from "../domain/common";
 
 describe('CustomerService', () => {

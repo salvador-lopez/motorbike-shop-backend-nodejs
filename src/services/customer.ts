@@ -1,5 +1,6 @@
 import {Customer, CustomerRepository} from "../domain/customer";
 import {EntityId, Email, Credit} from "../domain/common";
+import {EntityNotFoundError} from "../domain/errors";
 
 export class CustomerService {
     private repository: CustomerRepository;
