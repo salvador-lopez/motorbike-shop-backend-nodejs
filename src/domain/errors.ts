@@ -1,4 +1,4 @@
-import {EntityId} from "./common";
+import {Email, EntityId} from "./common";
 
 export class DomainConflictError extends Error {
     constructor(message: string) {
@@ -16,10 +16,18 @@ export class EntityNotFoundError extends Error {
     }
 }
 
-export class EntityAlreadyExistError extends DomainConflictError {
+export class EntityWithSameIdAlreadyExistError extends DomainConflictError {
     constructor(id: EntityId) {
-        super(`Entity with id ${id.value} cannot be created because it already exists with same id and/or unique constraint.`);
+        super(`Entity with id ${id.value} already exists.`);
 
-        Object.setPrototypeOf(this, EntityAlreadyExistError.prototype);
+        Object.setPrototypeOf(this, EntityWithSameIdAlreadyExistError.prototype);
+    }
+}
+
+export class EntityWithSameEmailAlreadyExistError extends DomainConflictError {
+    constructor(email: Email) {
+        super(`Entity with email ${email.value} already exists.`);
+
+        Object.setPrototypeOf(this, EntityWithSameEmailAlreadyExistError.prototype);
     }
 }

@@ -2,7 +2,12 @@ import {CustomerDTO, CustomerService} from './customer';
 import { Customer, CustomerRepository } from '../domain/customer';
 import {v4 as UUID} from "uuid";
 import { mock, mockReset } from 'jest-mock-extended';
-import {DomainConflictError, EntityNotFoundError} from "../domain/errors";
+import {
+    DomainConflictError,
+    EntityNotFoundError,
+    EntityWithSameEmailAlreadyExistError,
+    EntityWithSameIdAlreadyExistError
+} from "../domain/errors";
 import {EntityId, Email, Credit} from "../domain/common";
 
 describe('CustomerService', () => {
@@ -47,18 +52,48 @@ describe('CustomerService', () => {
         await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
     });
 
-    it('create should propagate the DomainConflictError thrown by the repository', async () => {
+    it('create should throw EntityWithSameIdAlreadyExistError', async () => {
         const id = UUID();
         const email = "email@example.com";
-        const expectedErrorMsg = "Test domain error message";
+
+        mockRepository.findById.mockImplementationOnce(async () => {
+            return new Customer(new EntityId(id), new Email(email));
+        });
+
+        const resultPromise = customerService.create(id, email);
+
+        await expect(resultPromise).rejects.toThrow(`Entity with id ${id} already exists.`);
+        await expect(resultPromise).rejects.toBeInstanceOf(EntityWithSameIdAlreadyExistError);
+        await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
+    });
+
+    it('create should throw EntityWithSameIdAlreadyExistError', async () => {
+        const id = UUID();
+        const email = "email@example.com";
+
+        mockRepository.findByEmail.mockImplementationOnce(async () => {
+            return new Customer(new EntityId(UUID()), new Email(email));
+        });
+
+        const resultPromise = customerService.create(id, email);
+
+        await expect(resultPromise).rejects.toThrow(`Entity with email ${email} already exists.`);
+        await expect(resultPromise).rejects.toBeInstanceOf(EntityWithSameEmailAlreadyExistError);
+        await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
+    });
+
+    it('create should propagate the Exception thrown by the repository', async () => {
+        const id = UUID();
+        const email = "email@example.com";
+        const expectedErrorMsg = "unexpected error message";
         mockRepository.create.mockImplementationOnce(async () => {
-            throw new DomainConflictError(expectedErrorMsg);
+            throw new Error(expectedErrorMsg);
         });
 
         const resultPromise = customerService.create(id, email);
 
         await expect(resultPromise).rejects.toThrow(expectedErrorMsg);
-        await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
+        await expect(resultPromise).rejects.toBeInstanceOf(Error);
     });
 
     it('should get the customer by its id', async () => {

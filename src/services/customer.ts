@@ -1,6 +1,10 @@
 import {Customer, CustomerRepository} from "../domain/customer";
 import {EntityId, Email, Credit} from "../domain/common";
-import {EntityNotFoundError} from "../domain/errors";
+import {
+    EntityNotFoundError,
+    EntityWithSameEmailAlreadyExistError,
+    EntityWithSameIdAlreadyExistError
+} from "../domain/errors";
 
 export class CustomerService {
     private repository: CustomerRepository;
@@ -11,6 +15,15 @@ export class CustomerService {
 
     async create(id: string, email: string): Promise<void> {
         const newCustomer = new Customer(new EntityId(id), new Email(email));
+
+        let customer = await this.repository.findById(newCustomer.id);
+        if (customer) {
+            throw new EntityWithSameIdAlreadyExistError(newCustomer.id);
+        }
+        customer = await this.repository.findByEmail(newCustomer.email);
+        if (customer) {
+            throw new EntityWithSameEmailAlreadyExistError(newCustomer.email);
+        }
 
         await this.repository.create(newCustomer);
     }

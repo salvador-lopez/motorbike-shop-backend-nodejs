@@ -2,6 +2,7 @@ import {EntityId, Email, Credit} from "./common";
 
 export interface CustomerRepository {
     findById(id: EntityId): Promise<Customer | null>;
+    findByEmail(email: Email): Promise<Customer | null>;
     findAll(): Promise<Customer[]>;
     create(customer: Customer): Promise<void>;
     save(customer: Customer): Promise<void>;
