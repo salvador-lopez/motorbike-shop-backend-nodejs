@@ -1,11 +1,11 @@
-import {Request, Response, Router} from "express";
+import {Router} from "express";
 import {getDataSource} from "../database/typeorm/data-source";
-import {CustomerDTO, CustomerService} from "../services/customer";
+import {CustomerService} from "../services/customer";
 import {TypeOrmCustomer} from "../database/typeorm/data-model";
 import {TypeOrmCustomerRepository} from "../database/typeorm/customer-repository";
-import {DomainConflictError, EntityNotFoundError} from "../domain/errors";
+import {CustomerController} from "../controllers/rest/customer";
 
-const createRouter = (customerService: CustomerService): Router => {
+const createRouter = (customerController: CustomerController): Router => {
     const router = Router();
 
     /**
@@ -42,26 +42,7 @@ const createRouter = (customerService: CustomerService): Router => {
      *       500:
      *         description: Internal server error.
      */
-    router.post('/customers', async (req: Request, res: Response) => {
-        try {
-            await customerService.create(req.body.id, req.body.email);
-            res.status(201).send();
-        } catch (error) {
-            if (error instanceof DomainConflictError) {
-                res.status(400).send(error.message);
-                return;
-            }
-            res.status(500).send("Internal Server Error");
-        }
-    });
-
-    const serializeCustomer = (customerDTO: CustomerDTO) => {
-        return {
-            id: customerDTO.id,
-            email: customerDTO.email,
-            available_credit: customerDTO.availableCredit,
-        };
-    };
+    router.post('/customers', customerController.create);
 
     /**
      * @openapi
@@ -103,22 +84,7 @@ const createRouter = (customerService: CustomerService): Router => {
      *       500:
      *         description: Internal server error
      */
-    router.get('/customers/:id', async (req: Request, res: Response) => {
-        try {
-            const customerDTO = await customerService.get(req.params.id);
-            res.status(200).send(serializeCustomer(customerDTO));
-        } catch (error) {
-            if (error instanceof EntityNotFoundError) {
-                res.status(404).send(error.message);
-                return;
-            }
-            if (error instanceof DomainConflictError) {
-                res.status(400).send(error.message);
-                return;
-            }
-            res.status(500).send("Internal Server Error");
-        }
-    });
+    router.get('/customers/:id', customerController.get);
 
     /**
      * @openapi
@@ -154,14 +120,7 @@ const createRouter = (customerService: CustomerService): Router => {
      *       500:
      *         description: Internal server error.
      */
-    router.get('/customers', async (req: Request, res: Response) => {
-        try {
-            const customerDTOs: CustomerDTO[] = await customerService.getAll();
-            res.status(200).send(customerDTOs.map(serializeCustomer));
-        } catch (error) {
-            res.status(500).send("Internal Server Error");
-        }
-    });
+    router.get('/customers', customerController.list);
 
     /**
      * @openapi
@@ -185,18 +144,7 @@ const createRouter = (customerService: CustomerService): Router => {
      *       500:
      *         description: Internal server error
      */
-    router.delete('/customers/:id', async (req: Request, res: Response) => {
-        try {
-            await customerService.delete(req.params.id);
-            res.status(200).send();
-        } catch (error) {
-            if (error instanceof EntityNotFoundError) {
-                res.status(404).send(error.message);
-                return;
-            }
-            res.status(500).send("Internal Server Error");
-        }
-    });
+    router.delete('/customers/:id', customerController.delete);
 
     /**
      * @openapi
@@ -237,22 +185,7 @@ const createRouter = (customerService: CustomerService): Router => {
      *         description: Internal server error
      */
 
-    router.patch('/customers/:id/add-credit', async (req: Request, res: Response) => {
-        try {
-            await customerService.addCredit(req.params.id, req.body.credit);
-            res.status(200).send();
-        } catch (error) {
-            if (error instanceof EntityNotFoundError) {
-                res.status(404).send(error.message);
-                return;
-            }
-            if (error instanceof DomainConflictError) {
-                res.status(400).send(error.message);
-                return;
-            }
-            res.status(500).send("Internal Server Error");
-        }
-    });
+    router.patch('/customers/:id/add-credit', customerController.addCredit);
 
     return router;
 };
@@ -260,7 +193,8 @@ const createRouter = (customerService: CustomerService): Router => {
 const customerServiceInstance = new CustomerService(
     new TypeOrmCustomerRepository(getDataSource().getRepository(TypeOrmCustomer))
 );
+const customerControllerInstance = new CustomerController(customerServiceInstance);
 
-const customerRouter = createRouter(customerServiceInstance);
+const customerRouter = createRouter(customerControllerInstance);
 
 export default customerRouter;
