@@ -55,6 +55,14 @@ const createRouter = (customerService: CustomerService): Router => {
         }
     });
 
+    const serializeCustomer = (customerDTO: CustomerDTO) => {
+        return {
+            id: customerDTO.id,
+            email: customerDTO.email,
+            available_credit: customerDTO.availableCredit,
+        };
+    };
+
     /**
      * @openapi
      * /customers/{id}:
@@ -98,7 +106,7 @@ const createRouter = (customerService: CustomerService): Router => {
     router.get('/customers/:id', async (req: Request, res: Response) => {
         try {
             const customerDTO = await customerService.get(req.params.id);
-            res.status(200).send(customerDTO);
+            res.status(200).send(serializeCustomer(customerDTO));
         } catch (error) {
             if (error instanceof EntityNotFoundError) {
                 res.status(404).send(error.message);
@@ -149,7 +157,7 @@ const createRouter = (customerService: CustomerService): Router => {
     router.get('/customers', async (req: Request, res: Response) => {
         try {
             const customerDTOs: CustomerDTO[] = await customerService.getAll();
-            res.status(200).send(customerDTOs);
+            res.status(200).send(customerDTOs.map(serializeCustomer));
         } catch (error) {
             res.status(500).send("Internal Server Error");
         }

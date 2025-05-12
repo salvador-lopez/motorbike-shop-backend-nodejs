@@ -23,15 +23,19 @@ export class CustomerService {
             throw new EntityNotFoundError(entityId);
         }
 
-        return new CustomerDTO(customer.id.value, customer.email.value, customer.availableCredit.value);
+        return this.buildCustomerDTO(customer);
     }
 
     async getAll(): Promise<CustomerDTO[]> {
         const customers = await this.repository.findAll();
 
         return customers.map(
-            customer => new CustomerDTO(customer.id.value, customer.email.value, customer.availableCredit.value)
+            customer => this.buildCustomerDTO(customer)
         );
+    }
+
+    private buildCustomerDTO(customer: Customer) {
+        return new CustomerDTO(customer.id.value, customer.email.value, customer.availableCredit.value);
     }
 
     async delete(id: string): Promise<void> {
@@ -68,13 +72,5 @@ export class CustomerDTO {
         this.id = id;
         this.email = email;
         this.availableCredit = availableCredit;
-    }
-
-    toJSON() {
-        return {
-            id: this.id,
-            email: this.email,
-            available_credit: this.availableCredit,
-        };
     }
 }
