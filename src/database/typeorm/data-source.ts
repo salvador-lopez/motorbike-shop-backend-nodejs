@@ -1,5 +1,5 @@
 import {DataSource} from "typeorm";
-import {TypeOrmCustomer} from "./data-model";
+import {TypeOrmBillingAddress, TypeOrmCustomer} from "./data-model";
 
 
 let dataSource: DataSource;
@@ -20,12 +20,12 @@ export const defaultDataSource = new DataSource({
     type: "sqlite",
     database: "./src/database/sqlite/motorbike-shop.db",
     synchronize: true,
-    entities: [TypeOrmCustomer],
+    entities: [TypeOrmCustomer,TypeOrmBillingAddress],
 });
 
 export const testDataSource = new DataSource({
     type: "sqlite",
     database: ":memory:",
     synchronize: true, // Auto-create tables for testing
-    entities: [TypeOrmCustomer],
+    entities: [TypeOrmCustomer,TypeOrmBillingAddress],
 });

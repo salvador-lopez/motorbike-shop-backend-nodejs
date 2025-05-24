@@ -73,16 +73,24 @@ describe('POST /api/customers', () => {
 });
 
 describe('GET /api/customers/:id', () => {
-    it('should respond with 200 ok with the customer resource', async () => {
+    it('should respond with 200 ok with the customer resource and billing addresses', async () => {
         const id = UUID();
         const email = 'customer@example.com';
         const availableCredit = 0;
-        await request(app).post(customersApiPath).send({ id: id, email: email });
+        const billingAddress = {
+            id : UUID(),
+            street: "153 Main St",
+            city: "New York",
+            state: "NY",
+            zipCode: "10001",
+            country: "USA" ,
+        };
+        await request(app).post(customersApiPath).send({ id: id, email: email, billingAddress});
 
         const response = await request(app).get(`${customersApiPath}/${id}`).send();
         expect(response.status).toBe(200);
 
-        const expectedResponseText = JSON.stringify({ id: id, email: email, available_credit: availableCredit });
+        const expectedResponseText = JSON.stringify({ id: id, email: email, available_credit: availableCredit,billing_address:[billingAddress] });
 
         expect(response.text).toBe(expectedResponseText);
     });
@@ -177,3 +185,26 @@ describe('PATCH /api/customers/:id/add-credit', () => {
         expect(response.text).toBe("Credit cannot be negative");
     });
 });
+
+describe('POST /api/customers/:id/add-billing-address', () => {
+    it('should respond with 500 when try to add duplicate billing address', async () => {
+        const id = UUID();
+        const email = 'customer@example.com';
+        const billingAddress= ()=> ({
+            id :UUID(),
+            street: "153 Main St",
+            city: "New York",
+            state: "NY",
+            zipCode: "10001",
+            country: "USA" ,
+        });
+
+        await request(app).post(customersApiPath).send({ id: id, email: email, billingAddress:billingAddress()});
+
+
+        const responseError = await request(app).post(`${customersApiPath}/${id}/add-billing-address`).send({billingAddress:billingAddress()});
+        expect(responseError.status).toBe(400);
+        expect(responseError.text).toBe("Billing address already exists");
+
+    });
+})

@@ -1,9 +1,10 @@
 import {Router} from "express";
 import {getDataSource} from "../database/typeorm/data-source";
 import {CustomerService} from "../services/customer";
-import {TypeOrmCustomer} from "../database/typeorm/data-model";
+import {TypeOrmBillingAddress, TypeOrmCustomer} from "../database/typeorm/data-model";
 import {TypeOrmCustomerRepository} from "../database/typeorm/customer-repository";
 import {CustomerController} from "../controllers/rest/customer";
+import {TypeOrmBillingAddressRepository} from "../database/typeorm/billingAddress-repository";
 
 const createRouter = (customerController: CustomerController): Router => {
     const router = Router();
@@ -31,9 +32,45 @@ const createRouter = (customerController: CustomerController): Router => {
      *                 format: email
      *                 description: The email address of the customer
      *                 example: "customer@example.com"
+     *               billingAddress:
+     *                 type: object
+     *                 properties:
+     *                   id:
+     *                     type: string
+     *                     format: uuid
+     *                     description: The unique identifier for the billing address
+     *                     example: "7a8b9c10-d11e-12f1-g2h3-i4j5k6l7m8n9"
+     *                   street:
+     *                     type: string
+     *                     description: Street address
+     *                     example: "123 Main St"
+     *                   city:
+     *                     type: string
+     *                     description: City name
+     *                     example: "New York"
+     *                   state:
+     *                     type: string
+     *                     description: State name
+     *                     example: "NY"
+     *                   zipCode:
+     *                     type: string
+     *                     description: Postal/ZIP code
+     *                     example: "10001"
+     *                   country:
+     *                     type: string
+     *                     description: Country name
+     *                     example: "USA"
+     *                 required:
+     *                   - id
+     *                   - street
+     *                   - city
+     *                   - state
+     *                   - zipCode
+     *                   - country
      *             required:
      *               - id
      *               - email
+     *               - billingAddress
      *     responses:
      *       201:
      *         description: Resource created successfully. No content returned.
@@ -187,13 +224,79 @@ const createRouter = (customerController: CustomerController): Router => {
 
     router.patch('/customers/:id/add-credit', customerController.addCredit);
 
+
+    /**
+     * @openapi
+     * /customers/{id}/add-billing-address:
+     *   post:
+     *     summary: Add billind address to a customer
+     *     parameters:
+     *       - in: path
+     *         name: id
+     *         required: true
+     *         schema:
+     *           type: string
+     *           format: uuid
+     *           description: The unique identifier of the customer
+     *           example: "9f2f9e08-93b6-47c1-a54e-5cffc6f59e4b"
+     *     requestBody:
+     *       required: true
+     *       content:
+     *         application/json:
+     *           schema:
+     *             type: object
+     *             properties:
+     *               id:
+     *                 type: string
+     *                 format: uuid
+     *                 description: The unique identifier for the billing address
+     *                 example: "7a8b9c10-d11e-12f1-g2h3-i4j5k6l7m8n9"
+     *               street:
+     *                 type: string
+     *                 description: Street address
+     *                 example: "123 Main St"
+     *               city:
+     *                 type: string
+     *                 description: City name
+     *                 example: "New York"
+     *               state:
+     *                 type: string
+     *                 description: State name
+     *                 example: "NY"
+     *               zipCode:
+     *                 type: string
+     *                 description: Postal/ZIP code
+     *                 example: "10001"
+     *               country:
+     *                 type: string
+     *                 description: Country name
+     *                 example: "USA"
+     *             required:
+     *               - id
+     *               - street
+     *               - city
+     *               - state
+     *               - zipCode
+     *               - country
+     *     responses:
+     *       200:
+     *         description: Billing Address successfully added to the customer's account
+     *       400:
+     *         description: Conflict or invalid operation
+     *       500:
+     *         description: Internal server error
+     */
+
+    router.post('/customers/:id/add-billing-address', customerController.createBillingAddress);
+
+
     return router;
 };
 
 const customerServiceInstance = new CustomerService(
     new TypeOrmCustomerRepository(getDataSource().getRepository(TypeOrmCustomer))
 );
-const customerControllerInstance = new CustomerController(customerServiceInstance);
+const customerControllerInstance = new CustomerController(customerServiceInstance,new TypeOrmBillingAddressRepository(getDataSource().getRepository(TypeOrmBillingAddress)));
 
 const customerRouter = createRouter(customerControllerInstance);
 
