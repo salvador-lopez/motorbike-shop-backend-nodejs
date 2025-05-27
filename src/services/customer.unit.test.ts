@@ -90,38 +90,39 @@ describe('CustomerService', () => {
         await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
     });
 
-    it('create should throw DomainConflictError when BillingAddress.street is empty', async () => {
+    describe('customerService.create - BillingAddress validation', () => {
         const id = UUID();
         const email = "email@example.com";
-        const street = '';
-        const city = 'Barcelona';
-        const state = 'Cataluña';
-        const zipCode = '08032';
-        const country = 'Spain';
-        mockRepository.create.mockImplementationOnce(async () => {});
+        mockRepository.create.mockImplementation(async () => {});
 
-        const billingAddressDTO = new BillingAddressDTO(street, city, state, zipCode, country);
-        const resultPromise = customerService.create(id, email, billingAddressDTO);
+        const baseAddress = {
+            street: 'Carrer de Llepant',
+            city: 'Barcelona',
+            state: 'Cataluña',
+            zipCode: '08032',
+            country: 'Spain',
+        };
 
-        await expect(resultPromise).rejects.toThrow("BillingAddress: 'street' must be a non-empty string");
-        await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
-    });
+        it.each([
+            ['street', '', "BillingAddress: 'street' must be a non-empty string"],
+            ['city', '', "BillingAddress: 'city' must be a non-empty string"],
+        ])(
+            "should throw DomainConflictError when BillingAddress.%s is empty",
+            async (field, value, expectedMessage) => {
+                const billingAddressDTO = new BillingAddressDTO(
+                    field === 'street' ? value : baseAddress.street,
+                    field === 'city' ? value : baseAddress.city,
+                    baseAddress.state,
+                    baseAddress.zipCode,
+                    baseAddress.country
+                );
 
-    it('create should throw DomainConflictError when BillingAddress.city is empty', async () => {
-        const id = UUID();
-        const email = "email@example.com";
-        const street = 'Carrer de Llepant';
-        const city = '';
-        const state = 'Cataluña';
-        const zipCode = '08032';
-        const country = 'Spain';
-        mockRepository.create.mockImplementationOnce(async () => {});
+                const resultPromise = customerService.create(id, email, billingAddressDTO);
 
-        const billingAddressDTO = new BillingAddressDTO(street, city, state, zipCode, country);
-        const resultPromise = customerService.create(id, email, billingAddressDTO);
-
-        await expect(resultPromise).rejects.toThrow("BillingAddress: 'city' must be a non-empty string");
-        await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
+                await expect(resultPromise).rejects.toThrow(expectedMessage);
+                await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
+            }
+        );
     });
 
     it('create should throw EntityWithSameIdAlreadyExistError', async () => {
