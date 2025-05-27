@@ -1,5 +1,6 @@
 import {CustomerDTO, CustomerService} from './customer';
-import { Customer, CustomerRepository } from '../domain/customer';
+import {BillingAddress, Customer, CustomerRepository} from '../domain/customer';
+import {BillingAddressDTO} from './customer';
 import {v4 as UUID} from "uuid";
 import { mock, mockReset } from 'jest-mock-extended';
 import {
@@ -27,6 +28,28 @@ describe('CustomerService', () => {
         mockRepository.create.mockImplementationOnce(async () => {});
 
         await expect(customerService.create(id, email)).resolves.toBeUndefined();
+        expect(mockRepository.create).toHaveBeenCalledWith(expectedCustomer);
+    });
+
+    it('should create a new customer with billing address', async () => {
+        const id = UUID();
+        const email = "email@example.com";
+        const street = 'Carrer de Llepant';
+        const city = 'Barcelona';
+        const state = 'Cataluña';
+        const zipCode = '08032';
+        const country = 'Spain';
+
+        const expectedCustomer = new Customer(
+            new EntityId(id),
+            new Email(email),
+            new BillingAddress(street, city, state, zipCode, country)
+        );
+
+        mockRepository.create.mockImplementationOnce(async () => {});
+
+        const billingAddressDTO = new BillingAddressDTO(street, city, state, zipCode, country);
+        await expect(customerService.create(id, email, billingAddressDTO)).resolves.toBeUndefined();
         expect(mockRepository.create).toHaveBeenCalledWith(expectedCustomer);
     });
 
