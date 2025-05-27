@@ -1,4 +1,5 @@
 import {EntityId, Email, Credit} from "./common";
+import {DomainConflictError} from "./errors";
 
 export interface CustomerRepository {
     findById(id: EntityId): Promise<Customer | null>;
@@ -17,11 +18,18 @@ export class BillingAddress {
     readonly country: string
 
     constructor(street: string, city: string, state: string, zipCode: string, country: string) {
+        this.assertNonEmpty('street', street);
         this.street = street;
         this.city = city;
         this.state = state;
         this.zipCode = zipCode;
         this.country = country;
+    }
+
+    private assertNonEmpty(fieldName: string, value: string) {
+        if (value.trim().length === 0) {
+            throw new DomainConflictError(`BillingAddress: '${fieldName}' must be a non-empty string`);
+        }
     }
 }
 

@@ -90,6 +90,23 @@ describe('CustomerService', () => {
         await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
     });
 
+    it('create should throw DomainConflictError when BillingAddress.street is empty', async () => {
+        const id = UUID();
+        const email = "email@example.com";
+        const street = '';
+        const city = 'Barcelona';
+        const state = 'Cataluña';
+        const zipCode = '08032';
+        const country = 'Spain';
+        mockRepository.create.mockImplementationOnce(async () => {});
+
+        const billingAddressDTO = new BillingAddressDTO(street, city, state, zipCode, country);
+        const resultPromise = customerService.create(id, email, billingAddressDTO);
+
+        await expect(resultPromise).rejects.toThrow("BillingAddress: 'street' must be a non-empty string");
+        await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
+    });
+
     it('create should throw EntityWithSameIdAlreadyExistError', async () => {
         const id = UUID();
         const email = "email@example.com";
