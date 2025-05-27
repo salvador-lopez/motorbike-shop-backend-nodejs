@@ -106,15 +106,18 @@ describe('CustomerService', () => {
         it.each([
             ['street', '', "BillingAddress: 'street' must be a non-empty string"],
             ['city', '', "BillingAddress: 'city' must be a non-empty string"],
+            ['state', '', "BillingAddress: 'state' must be a non-empty string"],
+            ['zipCode', '', "BillingAddress: 'zipCode' must be a non-empty string"],
+            ['country', '', "BillingAddress: 'country' must be a non-empty string"],
         ])(
             "should throw DomainConflictError when BillingAddress.%s is empty",
             async (field, value, expectedMessage) => {
                 const billingAddressDTO = new BillingAddressDTO(
                     field === 'street' ? value : baseAddress.street,
                     field === 'city' ? value : baseAddress.city,
-                    baseAddress.state,
-                    baseAddress.zipCode,
-                    baseAddress.country
+                    field === 'state' ? value : baseAddress.state,
+                    field === 'zipCode' ? value : baseAddress.zipCode,
+                    field === 'country' ? value : baseAddress.country,
                 );
 
                 const resultPromise = customerService.create(id, email, billingAddressDTO);

@@ -20,6 +20,9 @@ export class BillingAddress {
     constructor(street: string, city: string, state: string, zipCode: string, country: string) {
         this.assertNonEmpty('street', street);
         this.assertNonEmpty('city', city);
+        this.assertNonEmpty('state', state);
+        this.assertNonEmpty('zipCode', zipCode);
+        this.assertNonEmpty('country', country);
         this.street = street;
         this.city = city;
         this.state = state;
