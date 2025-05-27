@@ -103,26 +103,24 @@ describe('CustomerService', () => {
             country: 'Spain',
         };
 
-        it.each([
-            ['street', '', "BillingAddress: 'street' must be a non-empty string"],
-            ['city', '', "BillingAddress: 'city' must be a non-empty string"],
-            ['state', '', "BillingAddress: 'state' must be a non-empty string"],
-            ['zipCode', '', "BillingAddress: 'zipCode' must be a non-empty string"],
-            ['country', '', "BillingAddress: 'country' must be a non-empty string"],
-        ])(
+        it.each([['street'], ['city'], ['state'], ['zipCode'], ['country']])(
             "should throw DomainConflictError when BillingAddress.%s is empty",
-            async (field, value, expectedMessage) => {
+            async (field) => {
+                const invalidAddress = {
+                    ...baseAddress,
+                    [field]: "",
+                };
                 const billingAddressDTO = new BillingAddressDTO(
-                    field === 'street' ? value : baseAddress.street,
-                    field === 'city' ? value : baseAddress.city,
-                    field === 'state' ? value : baseAddress.state,
-                    field === 'zipCode' ? value : baseAddress.zipCode,
-                    field === 'country' ? value : baseAddress.country,
+                    invalidAddress.street,
+                    invalidAddress.city,
+                    invalidAddress.state,
+                    invalidAddress.zipCode,
+                    invalidAddress.country,
                 );
 
                 const resultPromise = customerService.create(id, email, billingAddressDTO);
 
-                await expect(resultPromise).rejects.toThrow(expectedMessage);
+                await expect(resultPromise).rejects.toThrow(`BillingAddress: '${field}' must be a non-empty string`);
                 await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
             }
         );
