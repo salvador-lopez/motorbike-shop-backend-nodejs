@@ -1,5 +1,6 @@
 import {CustomerDTO, CustomerService} from './customer';
-import { Customer, CustomerRepository } from '../domain/customer';
+import {BillingAddress, Customer, CustomerRepository} from '../domain/customer';
+import {BillingAddressDTO} from './customer';
 import {v4 as UUID} from "uuid";
 import { mock, mockReset } from 'jest-mock-extended';
 import {
@@ -18,226 +19,294 @@ describe('CustomerService', () => {
         mockReset(mockRepository);
     });
 
-    it('should create a new customer', async () => {
-        const id = UUID();
-        const email = "email@example.com";
-        const expectedCustomer = new Customer(new EntityId(id), new Email(email));
-        expect(expectedCustomer.availableCredit.value).toBe(0);
+    describe('create', () => {
+        it('happy path', async () => {
+            const id = UUID();
+            const email = "email@example.com";
+            const expectedCustomer = new Customer(new EntityId(id), new Email(email));
+            expect(expectedCustomer.availableCredit.value).toBe(0);
 
-        mockRepository.create.mockImplementationOnce(async () => {});
+            mockRepository.create.mockImplementationOnce(async () => {});
 
-        await expect(customerService.create(id, email)).resolves.toBeUndefined();
-        expect(mockRepository.create).toHaveBeenCalledWith(expectedCustomer);
-    });
-
-    it('create should throw DomainConflictError when uuid is invalid', async () => {
-        const id = "invalid-uuid";
-        const email = "email@example.com";
-        mockRepository.create.mockImplementationOnce(async () => {});
-
-        const resultPromise = customerService.create(id, email);
-
-        await expect(resultPromise).rejects.toThrow("Invalid UUID: invalid-uuid");
-        await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
-    });
-
-    it('create should throw DomainConflictError when email is invalid', async () => {
-        const id = UUID();
-        const email = "invalid-email";
-        mockRepository.create.mockImplementationOnce(async () => {});
-
-        const resultPromise = customerService.create(id, email);
-
-        await expect(resultPromise).rejects.toThrow("Invalid email: invalid-email");
-        await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
-    });
-
-    it('create should throw EntityWithSameIdAlreadyExistError', async () => {
-        const id = UUID();
-        const email = "email@example.com";
-
-        mockRepository.findById.mockImplementationOnce(async () => {
-            return new Customer(new EntityId(id), new Email(email));
+            await expect(customerService.create(id, email)).resolves.toBeUndefined();
+            expect(mockRepository.create).toHaveBeenCalledWith(expectedCustomer);
         });
 
-        const resultPromise = customerService.create(id, email);
+        it('happy path with billing address', async () => {
+            const id = UUID();
+            const email = "email@example.com";
+            const street = 'Carrer de Llepant';
+            const city = 'Barcelona';
+            const state = 'Cataluña';
+            const zipCode = '08032';
+            const country = 'Spain';
 
-        await expect(resultPromise).rejects.toThrow(`Entity with id ${id} already exists.`);
-        await expect(resultPromise).rejects.toBeInstanceOf(EntityWithSameIdAlreadyExistError);
-        await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
+            const expectedCustomer = new Customer(
+                new EntityId(id),
+                new Email(email),
+                new BillingAddress(street, city, state, zipCode, country)
+            );
+
+            mockRepository.create.mockImplementationOnce(async () => {});
+
+            const billingAddressDTO = new BillingAddressDTO(street, city, state, zipCode, country);
+            await expect(customerService.create(id, email, billingAddressDTO)).resolves.toBeUndefined();
+            expect(mockRepository.create).toHaveBeenCalledWith(expectedCustomer);
+        });
+
+        it('throw DomainConflictError when uuid is invalid', async () => {
+            const id = "invalid-uuid";
+            const email = "email@example.com";
+            mockRepository.create.mockImplementationOnce(async () => {});
+
+            const resultPromise = customerService.create(id, email);
+
+            await expect(resultPromise).rejects.toThrow("Invalid UUID: invalid-uuid");
+            await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
+        });
+
+        it('throw DomainConflictError when email is invalid', async () => {
+            const id = UUID();
+            const email = "invalid-email";
+            mockRepository.create.mockImplementationOnce(async () => {});
+
+            const resultPromise = customerService.create(id, email);
+
+            await expect(resultPromise).rejects.toThrow("Invalid email: invalid-email");
+            await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
+        });
+
+        it('throw EntityWithSameIdAlreadyExistError', async () => {
+            const id = UUID();
+            const email = "email@example.com";
+
+            mockRepository.findById.mockImplementationOnce(async () => {
+                return new Customer(new EntityId(id), new Email(email));
+            });
+
+            const resultPromise = customerService.create(id, email);
+
+            await expect(resultPromise).rejects.toThrow(`Entity with id ${id} already exists.`);
+            await expect(resultPromise).rejects.toBeInstanceOf(EntityWithSameIdAlreadyExistError);
+            await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
+        });
+
+        describe('BillingAddress validation', () => {
+            const id = UUID();
+            const email = "email@example.com";
+            mockRepository.create.mockImplementation(async () => {});
+
+            const baseAddress = {
+                street: 'Carrer de Llepant',
+                city: 'Barcelona',
+                state: 'Cataluña',
+                zipCode: '08032',
+                country: 'Spain',
+            };
+
+            it.each([['street'], ['city'], ['state'], ['zipCode'], ['country']])(
+                "throw DomainConflictError when BillingAddress.%s is empty",
+                async (field) => {
+                    const invalidAddress = {
+                        ...baseAddress,
+                        [field]: "",
+                    };
+                    const billingAddressDTO = new BillingAddressDTO(
+                        invalidAddress.street,
+                        invalidAddress.city,
+                        invalidAddress.state,
+                        invalidAddress.zipCode,
+                        invalidAddress.country,
+                    );
+
+                    const resultPromise = customerService.create(id, email, billingAddressDTO);
+
+                    await expect(resultPromise).rejects.toThrow(`BillingAddress: '${field}' must be a non-empty string`);
+                    await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
+                }
+            );
+        });
+
+        it('throw EntityWithSameEmailAlreadyExistError', async () => {
+            const id = UUID();
+            const email = "email@example.com";
+
+            mockRepository.findByEmail.mockImplementationOnce(async () => {
+                return new Customer(new EntityId(UUID()), new Email(email));
+            });
+
+            const resultPromise = customerService.create(id, email);
+
+            await expect(resultPromise).rejects.toThrow(`Entity with email ${email} already exists.`);
+            await expect(resultPromise).rejects.toBeInstanceOf(EntityWithSameEmailAlreadyExistError);
+            await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
+        });
+
+        it('propagate the Exception thrown by the repository', async () => {
+            const id = UUID();
+            const email = "email@example.com";
+            const expectedErrorMsg = "unexpected error message";
+            mockRepository.create.mockImplementationOnce(async () => {
+                throw new Error(expectedErrorMsg);
+            });
+
+            const resultPromise = customerService.create(id, email);
+
+            await expect(resultPromise).rejects.toThrow(expectedErrorMsg);
+            await expect(resultPromise).rejects.toBeInstanceOf(Error);
+        });
     });
 
-    it('create should throw EntityWithSameIdAlreadyExistError', async () => {
-        const id = UUID();
-        const email = "email@example.com";
+    describe('get by id', () => {
+        it('happy path', async () => {
+            const id = UUID();
+            const email = "email@example.com";
+            const availableCredit = 0;
 
-        mockRepository.findByEmail.mockImplementationOnce(async () => {
-            return new Customer(new EntityId(UUID()), new Email(email));
+            const entityId = new EntityId(id);
+
+            mockRepository.findById.mockImplementationOnce(async () => {
+                return new Customer(entityId, new Email(email));
+            });
+
+            const expectedCustomerDTO = new CustomerDTO(id, email, availableCredit);
+            const customerDTOFound = await customerService.get(id);
+
+            expect(customerDTOFound).toEqual(expectedCustomerDTO);
+            expect(mockRepository.findById).toHaveBeenCalledWith(entityId);
         });
 
-        const resultPromise = customerService.create(id, email);
+        it('throw EntityNotFoundError', async () => {
+            const id = UUID();
 
-        await expect(resultPromise).rejects.toThrow(`Entity with email ${email} already exists.`);
-        await expect(resultPromise).rejects.toBeInstanceOf(EntityWithSameEmailAlreadyExistError);
-        await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
+            mockRepository.findById.mockImplementationOnce(async () => {
+                return null;
+            });
+
+            const resultPromise = customerService.get(id);
+
+            await expect(resultPromise).rejects.toThrow("Entity not found with id " + id);
+            await expect(resultPromise).rejects.toBeInstanceOf(EntityNotFoundError);
+        });
     });
 
-    it('create should propagate the Exception thrown by the repository', async () => {
-        const id = UUID();
-        const email = "email@example.com";
-        const expectedErrorMsg = "unexpected error message";
-        mockRepository.create.mockImplementationOnce(async () => {
-            throw new Error(expectedErrorMsg);
+    describe('list', () => {
+        it('all', async () => {
+            const userAId = UUID();
+            const userAEntityId = new EntityId(userAId);
+            const userAEmail = "userAEmail@example.com";
+            const userBId = UUID();
+            const userBEntityId = new EntityId(userBId);
+            const userBEmail = "userBemail@example.com";
+            const availableCredit = 0;
+
+            const customers: Customer[] = [
+                new Customer(userAEntityId, new Email(userAEmail)),
+                new Customer(userBEntityId, new Email(userBEmail))
+            ];
+
+            mockRepository.findAll.mockImplementationOnce(async () => {
+                return customers;
+            });
+
+            const expectedCustomerDTOs: CustomerDTO[] = [
+                new CustomerDTO(userAId, userAEmail, availableCredit),
+                new CustomerDTO(userBId, userBEmail, availableCredit)
+            ];
+
+            const customerDTOsFound = await customerService.getAll();
+
+            expect(customerDTOsFound).toEqual(expectedCustomerDTOs);
         });
-
-        const resultPromise = customerService.create(id, email);
-
-        await expect(resultPromise).rejects.toThrow(expectedErrorMsg);
-        await expect(resultPromise).rejects.toBeInstanceOf(Error);
     });
 
-    it('should get the customer by its id', async () => {
-        const id = UUID();
-        const email = "email@example.com";
-        const availableCredit = 0;
+    describe('delete by id', () => {
+        it('happy path', async () => {
+            const id = UUID();
+            const email = "email@example.com";
+            const entityId = new EntityId(id);
 
-        const entityId = new EntityId(id);
+            const customer = new Customer(entityId, new Email(email));
 
-        mockRepository.findById.mockImplementationOnce(async () => {
-            return new Customer(entityId, new Email(email));
+            mockRepository.findById.mockImplementationOnce(async () => {
+                return customer;
+            });
+            mockRepository.delete.mockImplementationOnce(async () => {
+                return;
+            });
+
+            await customerService.delete(id);
+            expect(mockRepository.delete).toHaveBeenCalledWith(customer);
         });
 
-        const expectedCustomerDTO = new CustomerDTO(id, email, availableCredit);
-        const customerDTOFound = await customerService.get(id);
+        it('throw EntityNotFoundError', async () => {
+            const id = UUID();
 
-        expect(customerDTOFound).toEqual(expectedCustomerDTO);
-        expect(mockRepository.findById).toHaveBeenCalledWith(entityId);
+            mockRepository.findById.mockImplementationOnce(async () => {
+                return null;
+            });
+
+            const resultPromise = customerService.delete(id);
+
+            await expect(resultPromise).rejects.toThrow("Entity not found with id " + id);
+            await expect(resultPromise).rejects.toBeInstanceOf(EntityNotFoundError);
+        });
     });
 
-    it('should list all customers', async () => {
-        const userAId = UUID();
-        const userAEntityId = new EntityId(userAId);
-        const userAEmail = "userAEmail@example.com";
-        const userBId = UUID();
-        const userBEntityId = new EntityId(userBId);
-        const userBEmail = "userBemail@example.com";
-        const availableCredit = 0;
+    describe('addCredit', () => {
+        it('happy path', async () => {
+            const id = UUID();
+            const email = "email@example.com";
+            const entityId = new EntityId(id);
+            const creditValue = 10.2
 
-        const customers: Customer[] = [
-            new Customer(userAEntityId, new Email(userAEmail)),
-            new Customer(userBEntityId, new Email(userBEmail))
-        ];
+            let customerWithAddedCredit = Reflect.construct(Customer, [
+                new EntityId(id),
+                new Email(email),
+            ]);
+            (customerWithAddedCredit as any)._availableCredit = new Credit(creditValue);
 
-        mockRepository.findAll.mockImplementationOnce(async () => {
-            return customers;
+            mockRepository.findById.mockImplementationOnce(async () => {
+                return new Customer(entityId, new Email(email));
+            });
+
+            mockRepository.save.mockImplementationOnce(async () => {
+                return;
+            });
+
+            await customerService.addCredit(id, creditValue);
+
+            expect(mockRepository.save).toHaveBeenCalledWith(customerWithAddedCredit);
         });
 
-        const expectedCustomerDTOs: CustomerDTO[] = [
-            new CustomerDTO(userAId, userAEmail, availableCredit),
-            new CustomerDTO(userBId, userBEmail, availableCredit)
-        ];
+        it('throw EntityNotFoundError', async () => {
+            const id = UUID();
+            const creditValue = 50;
 
-        const customerDTOsFound = await customerService.getAll();
+            mockRepository.findById.mockImplementationOnce(async () => {
+                return null;
+            });
 
-        expect(customerDTOsFound).toEqual(expectedCustomerDTOs);
-    });
+            const resultPromise = customerService.addCredit(id, creditValue);
 
-    it('get should throw EntityNotFoundError when repository findById return Promise<void>', async () => {
-        const id = UUID();
-
-        mockRepository.findById.mockImplementationOnce(async () => {
-            return null;
+            await expect(resultPromise).rejects.toThrow("Entity not found with id " + id);
+            await expect(resultPromise).rejects.toBeInstanceOf(EntityNotFoundError);
         });
 
-        const resultPromise = customerService.get(id);
+        it('throw DomainConflictError when try to add negative credit', async () => {
+            const id = UUID();
+            const entityId = new EntityId(id);
+            const email = "email@example.com";
+            const creditValue = -10;
 
-        await expect(resultPromise).rejects.toThrow("Entity not found with id " + id);
-        await expect(resultPromise).rejects.toBeInstanceOf(EntityNotFoundError);
-    });
+            mockRepository.findById.mockImplementationOnce(async () => {
+                return new Customer(entityId, new Email(email));
+            });
 
-    it('should delete the customer by its id', async () => {
-        const id = UUID();
-        const email = "email@example.com";
-        const entityId = new EntityId(id);
+            const resultPromise = customerService.addCredit(id, creditValue);
 
-        const customer = new Customer(entityId, new Email(email));
-
-        mockRepository.findById.mockImplementationOnce(async () => {
-            return customer;
+            await expect(resultPromise).rejects.toThrow("Credit cannot be negative");
+            await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
         });
-        mockRepository.delete.mockImplementationOnce(async () => {
-            return;
-        });
-
-        await customerService.delete(id);
-        expect(mockRepository.delete).toHaveBeenCalledWith(customer);
-    });
-
-    it('delete should throw EntityNotFoundError when repository findById return Promise<void>', async () => {
-        const id = UUID();
-
-        mockRepository.findById.mockImplementationOnce(async () => {
-            return null;
-        });
-
-        const resultPromise = customerService.delete(id);
-
-        await expect(resultPromise).rejects.toThrow("Entity not found with id " + id);
-        await expect(resultPromise).rejects.toBeInstanceOf(EntityNotFoundError);
-    });
-
-    it('should add available credit to the customer', async () => {
-        const id = UUID();
-        const email = "email@example.com";
-        const entityId = new EntityId(id);
-        const creditValue = 10.2
-
-        let customerWithAddedCredit = Reflect.construct(Customer, [
-            new EntityId(id),
-            new Email(email),
-        ]);
-        (customerWithAddedCredit as any)._availableCredit = new Credit(creditValue);
-
-        mockRepository.findById.mockImplementationOnce(async () => {
-            return new Customer(entityId, new Email(email));
-        });
-
-        mockRepository.save.mockImplementationOnce(async () => {
-            return;
-        });
-
-        await customerService.addCredit(id, creditValue);
-
-        expect(mockRepository.save).toHaveBeenCalledWith(customerWithAddedCredit);
-    });
-
-    it('addCredit should throw EntityNotFoundError when repository findById return Promise<void>', async () => {
-        const id = UUID();
-        const creditValue = 50;
-
-        mockRepository.findById.mockImplementationOnce(async () => {
-            return null;
-        });
-
-        const resultPromise = customerService.addCredit(id, creditValue);
-
-        await expect(resultPromise).rejects.toThrow("Entity not found with id " + id);
-        await expect(resultPromise).rejects.toBeInstanceOf(EntityNotFoundError);
-    });
-
-    it('addCredit should throw DomainConflictError when try to add negative credit', async () => {
-        const id = UUID();
-        const entityId = new EntityId(id);
-        const email = "email@example.com";
-        const creditValue = -10;
-
-        mockRepository.findById.mockImplementationOnce(async () => {
-            return new Customer(entityId, new Email(email));
-        });
-
-        const resultPromise = customerService.addCredit(id, creditValue);
-
-        await expect(resultPromise).rejects.toThrow("Credit cannot be negative");
-        await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
     });
 });

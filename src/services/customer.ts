@@ -1,4 +1,4 @@
-import {Customer, CustomerRepository} from "../domain/customer";
+import {Customer, CustomerRepository, BillingAddress} from "../domain/customer";
 import {EntityId, Email, Credit} from "../domain/common";
 import {
     EntityNotFoundError,
@@ -13,8 +13,12 @@ export class CustomerService {
         this.repository = customerRepository;
     }
 
-    async create(id: string, email: string): Promise<void> {
-        const newCustomer = new Customer(new EntityId(id), new Email(email));
+    async create(id: string, email: string, billingAddressDTO?: BillingAddressDTO): Promise<void> {
+        let billingAddress: BillingAddress | undefined;
+        if (billingAddressDTO) {
+            billingAddress = new BillingAddress(billingAddressDTO.street, billingAddressDTO.city, billingAddressDTO.state, billingAddressDTO.zipCode, billingAddressDTO.country);
+        }
+        const newCustomer = new Customer(new EntityId(id), new Email(email), billingAddress);
 
         let customer = await this.repository.findById(newCustomer.id);
         if (customer) {
@@ -85,5 +89,21 @@ export class CustomerDTO {
         this.id = id;
         this.email = email;
         this.availableCredit = availableCredit;
+    }
+}
+
+export class BillingAddressDTO {
+    readonly street: string;
+    readonly city: string;
+    readonly state: string;
+    readonly zipCode: string;
+    readonly country: string;
+
+    constructor(street: string, city: string, state: string, zipCode: string, country: string) {
+        this.street = street;
+        this.city = city;
+        this.state = state;
+        this.zipCode = zipCode;
+        this.country = country;
     }
 }
