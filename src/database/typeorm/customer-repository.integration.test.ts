@@ -1,6 +1,6 @@
 import {testDataSource} from "./data-source";
 import {EntityId, Email, Credit} from "../../domain/common";
-import {Customer} from "../../domain/customer";
+import {BillingAddress, Customer} from "../../domain/customer";
 import { v4 as UUID} from 'uuid';
 import {TypeOrmCustomerRepository} from "./customer-repository";
 import {TypeOrmCustomer} from "./data-model";
@@ -23,7 +23,7 @@ afterAll(async () => {
 });
 
 describe("Customer Repository Integration Test", () => {
-    it("should create a new customer", async () => {
+    it("should create a new customer without billing address", async () => {
         const entityId = new EntityId(UUID());
         const email = new Email("email@example.com");
         const customer = new Customer(entityId, email);
@@ -37,6 +37,25 @@ describe("Customer Repository Integration Test", () => {
             expect(customerDataModel.id).toBe(entityId.value);
             expect(customerDataModel.email).toBe(email.value);
             expect(customerDataModel.availableCredit).toBe(0);
+        }
+    });
+
+    it("should create a new customer with billing address", async () => {
+        const entityId = new EntityId(UUID());
+        const email = new Email("email@example.com");
+        const billingAddress = new BillingAddress('Montevideo','Uruapan','Mexico','72000','Narnia');
+        const customer = new Customer(entityId, email,billingAddress);
+
+        await customerRepo.create(customer);
+
+        const customerDataModel = await typeOrmRepo.findOneBy({ id: entityId.value });
+
+        expect(customerDataModel).not.toBeNull();
+        if (customerDataModel !== null) {
+            expect(customerDataModel.id).toBe(entityId.value);
+            expect(customerDataModel.email).toBe(email.value);
+            expect(customerDataModel.availableCredit).toBe(0);
+            expect(customerDataModel.billingAddress).toEqual(billingAddress);
         }
     });
 
