@@ -49,7 +49,7 @@ export class TypeOrmCustomerRepository implements CustomerRepository {
 
     async create(customer: Customer): Promise<void> {
         await this.typeOrmRepo.insert(
-            new TypeOrmCustomer(customer.id.value, customer.email.value, customer.availableCredit.value)
+            new TypeOrmCustomer(customer.id.value, customer.email.value, customer.availableCredit.value,customer?.billingAddress)
         );
     }
 

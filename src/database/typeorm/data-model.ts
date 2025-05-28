@@ -1,5 +1,30 @@
 import { Entity, PrimaryColumn, Column } from "typeorm";
 
+export class TypeOrmBillingAddress {
+    @Column({ type: 'varchar', nullable: true })
+    readonly street: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    readonly city: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    readonly  zipCode: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    readonly state: string;
+
+    @Column({ type: 'varchar', nullable: true })
+    readonly country: string;
+
+    constructor(street: string, city: string, zipCode: string, state: string, country: string) {
+        this.street = street;
+        this.city = city;
+        this.zipCode = zipCode;
+        this.state = state;
+        this.country = country;
+    }
+}
+
 @Entity({ name: "customers" })
 export class TypeOrmCustomer {
     @PrimaryColumn("uuid")
@@ -11,9 +36,13 @@ export class TypeOrmCustomer {
     @Column({ type: "decimal" })
     readonly availableCredit: number;
 
-    constructor(id: string, email: string, availableCredit: number) {
+    @Column(()=> TypeOrmBillingAddress, {  prefix: "billing_address_" })
+    billingAddress?: TypeOrmBillingAddress;
+
+    constructor(id: string, email: string, availableCredit: number,billingAddress?: TypeOrmBillingAddress) {
         this.id = id;
         this.email = email;
         this.availableCredit = availableCredit;
+        this.billingAddress = billingAddress;
     }
 }

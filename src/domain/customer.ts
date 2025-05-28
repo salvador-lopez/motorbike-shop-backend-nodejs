@@ -41,12 +41,12 @@ export class Customer {
     readonly id: EntityId;
     readonly email: Email;
     private _availableCredit: Credit
-    private billingAddress?: BillingAddress;
+    private _billingAddress?: BillingAddress;
 
     constructor(id: EntityId, email: Email, billingAddress?: BillingAddress) {
         this.id = id;
         this.email = email;
-        this.billingAddress = billingAddress;
+        this._billingAddress = billingAddress;
         this._availableCredit = new Credit(0);
     }
 
@@ -56,5 +56,9 @@ export class Customer {
 
     addCredit(credit: Credit) {
         this._availableCredit = this._availableCredit.add(credit);
+    }
+
+    get billingAddress(): BillingAddress | undefined {
+        return this._billingAddress;
     }
 }
