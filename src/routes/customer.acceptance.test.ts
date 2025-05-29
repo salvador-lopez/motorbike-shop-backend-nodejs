@@ -5,6 +5,7 @@ import {Express} from "express";
 import createApp from "../app";
 import {v4 as UUID} from "uuid";
 import {BillingAddressDTO} from "../services/customer";
+import {DomainConflictError} from "../domain/errors";
 
 let app: Express;
 
@@ -38,6 +39,43 @@ describe('POST /api/customers', () => {
         expect(response.status).toBe(201);
         expect(response.text).toBe('');
     });
+
+    describe('BillingAddressDto validation', () => {
+        const id = UUID();
+        const email = "email@example.com";
+        const baseBillingAddressDto:BillingAddressDTO = {
+            street: 'Carrer de Llepant',
+            city: 'Barcelona',
+            state: 'Cataluña',
+            zipCode: '08032',
+            country: 'Spain',
+        };
+
+        it('should respond with 400 bad request', async () => {
+            const invalidKey= "invalid_key"
+                const invalidAddress = {...baseBillingAddressDto, [invalidKey]:"invalid"}
+
+            const response = await request(app)
+                .post(customersApiPath)
+                .send({ id: UUID(), email: 'invalid-email-example.com', billing_address: invalidAddress });
+            expect(response.status).toBe(400)
+            expect(response.text).toEqual(`the field {${invalidKey}} is invalid.\n`);
+        });
+
+        it.each<[keyof BillingAddressDTO]>([['street'], ['city'], ['state'], ['zipCode'], ['country']])(
+            "should respond with 400 bad request",
+            async (field) => {
+                const {[field]:_,...invalidAddress} = baseBillingAddressDto
+
+                const response = await request(app)
+                    .post(customersApiPath)
+                    .send({ id: UUID(), email: 'customer_withBillingAddress@example.com', billing_address:invalidAddress})
+                expect(response.status).toBe(400);
+                expect(response.text).toEqual(`the field {${field}} is required.\n`);
+            }
+        );
+    });
+
     it('should respond with 400 bad request', async () => {
         const response = await request(app)
             .post(customersApiPath)
