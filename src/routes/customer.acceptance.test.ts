@@ -58,8 +58,8 @@ describe('POST /api/customers', () => {
             .post(customersApiPath)
             .send({ id: id, email: anotherEmail });
         expect(response.status).toBe(400);
-        expect(response.text).toBe(
-            `Entity with id ${id} cannot be created because it already exists with same id and/or unique constraint.`
+        expect(response.text).toEqual(
+            `Entity with id ${id} already exists.`
         );
     });
     it('should respond with 400 bad request when execute the endpoint twice with same email', async () => {
@@ -75,8 +75,8 @@ describe('POST /api/customers', () => {
             .post(customersApiPath)
             .send({ id: anotherId, email: email });
         expect(response.status).toBe(400);
-        expect(response.text).toBe(
-            `Entity with id ${anotherId} cannot be created because it already exists with same id and/or unique constraint.`
+        expect(response.text).toEqual(
+            `Entity with email ${email} already exists.`
         );
     });
 });
