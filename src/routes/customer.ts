@@ -31,6 +31,35 @@ const createRouter = (customerController: CustomerController): Router => {
      *                 format: email
      *                 description: The email address of the customer
      *                 example: "customer@example.com"
+     *               billing_address:
+     *                 type: object
+     *                 properties:
+     *                   street:
+     *                     type: string
+     *                     description: Street address
+     *                     example: "123 Main St"
+     *                   city:
+     *                     type: string
+     *                     description: City name
+     *                     example: "New York"
+     *                   state:
+     *                     type: string
+     *                     description: State name
+     *                     example: "NY"
+     *                   zipCode:
+     *                     type: string
+     *                     description: Postal/ZIP code
+     *                     example: "10001"
+     *                   country:
+     *                     type: string
+     *                     description: Country name
+     *                     example: "USA"
+     *                 required:
+     *                   - street
+     *                   - city
+     *                   - state
+     *                   - zipCode
+     *                   - country
      *             required:
      *               - id
      *               - email
