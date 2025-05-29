@@ -11,7 +11,7 @@ export class CustomerController {
 
     create = async (req: Request, res: Response): Promise<void> => {
         try {
-            await this.customerService.create(req.body.id, req.body.email);
+            await this.customerService.create(req.body.id, req.body.email,req.body.billing_address);
             res.status(201).send();
         } catch (error) {
             if (error instanceof DomainConflictError) {

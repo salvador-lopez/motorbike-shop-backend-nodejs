@@ -4,6 +4,7 @@ import {TypeOrmCustomer} from "../database/typeorm/data-model";
 import {Express} from "express";
 import createApp from "../app";
 import {v4 as UUID} from "uuid";
+import {BillingAddressDTO} from "../services/customer";
 
 let app: Express;
 
@@ -26,6 +27,14 @@ describe('POST /api/customers', () => {
         const response = await request(app)
             .post(customersApiPath)
             .send({ id: UUID(), email: 'customer@example.com' });
+        expect(response.status).toBe(201);
+        expect(response.text).toBe('');
+    });
+
+    it('should respond with 201 resource created', async () => {
+        const response = await request(app)
+            .post(customersApiPath)
+            .send({ id: UUID(), email: 'customer_withBillingAddress@example.com', billing_address:new BillingAddressDTO("Montevideo","Parana","Entre Rios","3000","Argentina") });
         expect(response.status).toBe(201);
         expect(response.text).toBe('');
     });
