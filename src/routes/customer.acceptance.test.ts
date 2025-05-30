@@ -5,7 +5,6 @@ import {Express} from "express";
 import createApp from "../app";
 import {v4 as UUID} from "uuid";
 import {BillingAddressDTO} from "../services/customer";
-import {DomainConflictError} from "../domain/errors";
 
 let app: Express;
 
@@ -57,7 +56,7 @@ describe('POST /api/customers', () => {
 
             const response = await request(app)
                 .post(customersApiPath)
-                .send({ id: UUID(), email: 'invalid-email-example.com', billing_address: invalidAddress });
+                .send({ id: id, email: email, billing_address: invalidAddress });
             expect(response.status).toBe(400)
             expect(response.text).toEqual(`the field {${invalidKey}} is invalid.\n`);
         });

@@ -39,7 +39,7 @@ export class TypeOrmCustomer {
     @Column(()=> TypeOrmBillingAddress, {  prefix: "billing_address_" })
     billingAddress?: TypeOrmBillingAddress;
 
-    constructor(id: string, email: string, availableCredit: number,billingAddress?: TypeOrmBillingAddress) {
+    constructor(id: string, email: string, availableCredit: number, billingAddress?: TypeOrmBillingAddress) {
         this.id = id;
         this.email = email;
         this.availableCredit = availableCredit;

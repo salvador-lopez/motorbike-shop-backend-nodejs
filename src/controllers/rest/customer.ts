@@ -18,7 +18,7 @@ export class CustomerController {
                 return;
             }
 
-            await this.customerService.create(req.body.id, req.body.email,);
+            await this.customerService.create(req.body.id, req.body.email, req.body.billing_address);
             res.status(201).send();
         } catch (error) {
             if (error instanceof DomainConflictError) {
@@ -95,8 +95,12 @@ export class CustomerController {
     }
 
 
-    private validateBillingAddress=(billingAddressBody:BillingAddressDTO):string=>{
+    private validateBillingAddress=(billingAddressBody?:BillingAddressDTO):string=>{
         let errorMessage = ''
+        if (!billingAddressBody) {
+            return errorMessage;
+        }
+
         const dtoKeys:(keyof  BillingAddressDTO)[]= ['country','city','state','zipCode','street']
         const bodyKeys = Object.keys(billingAddressBody) as (keyof  BillingAddressDTO)[];
 
