@@ -42,6 +42,7 @@ export class Customer {
     readonly email: Email;
     private _availableCredit: Credit
     private _billingAddress?: BillingAddress;
+    private _secundaryBillingAddress?: BillingAddress
 
     constructor(id: EntityId, email: Email, billingAddress?: BillingAddress) {
         this.id = id;
@@ -61,4 +62,24 @@ export class Customer {
     get billingAddress(): BillingAddress | undefined {
         return this._billingAddress;
     }
+
+    addBillingAddress(billingAddress:BillingAddress){
+        if(!this._billingAddress){
+            this._billingAddress = billingAddress;
+            return;
+        }
+        const {street, city, zipCode, country, state} = billingAddress
+
+        if(street.toLowerCase() === this._billingAddress.street.toLowerCase() &&
+           city.toLowerCase() === this._billingAddress.city.toLowerCase() &&
+           zipCode.toLowerCase() === this._billingAddress.zipCode.toLowerCase() &&
+           country.toLowerCase() === this._billingAddress.country.toLowerCase() &&
+           state.toLowerCase() === this._billingAddress.state.toLowerCase()){
+
+            throw new DomainConflictError(`This billing address already exist`);
+        }
+
+        this._secundaryBillingAddress = billingAddress;
+    }
+
 }

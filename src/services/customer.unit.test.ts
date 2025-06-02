@@ -95,6 +95,7 @@ describe('CustomerService', () => {
             const id = UUID();
             const email = "email@example.com";
             mockRepository.create.mockImplementation(async () => {});
+            mockRepository.save.mockImplementation(async () => {});
 
             const baseAddress = {
                 street: 'Carrer de Llepant',
@@ -125,6 +126,98 @@ describe('CustomerService', () => {
                     await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
                 }
             );
+
+            it('should add billing address if not exist', async () => {
+                const id = UUID();
+
+                const customer = new Customer(
+                    new EntityId(id),
+                    new Email(email)
+                );
+
+                const expectedCustomer = new Customer(
+                    new EntityId(id),
+                    new Email(email),
+                    new BillingAddress(baseAddress.street, baseAddress.city, baseAddress.state, baseAddress.zipCode, baseAddress.country)
+                );
+
+                mockRepository.findById.mockImplementation(async () => customer);
+
+
+                const billingAddressDTO = new BillingAddressDTO(baseAddress.street, baseAddress.city, baseAddress.state, baseAddress.zipCode, baseAddress.country);
+                await expect(customerService.addBillingAddress(id, billingAddressDTO)).resolves.toBeUndefined();
+                expect(mockRepository.save).toHaveBeenCalledWith(expectedCustomer);
+
+
+            })
+
+            it('should add secondary billing address if billing address exist', async () => {
+                const id = UUID();
+
+                const anotherAddress = {
+                    street: 'Paraguay',
+                    city: 'Parana',
+                    state: 'Entre Rios',
+                    zipCode: '3100',
+                    country: 'Argentina',
+                }
+                const customer = new Customer(
+                    new EntityId(id),
+                    new Email(email),
+                    new BillingAddress(baseAddress.street, baseAddress.city, baseAddress.state, baseAddress.zipCode, baseAddress.country)
+                );
+
+                const expectedCustomer = new Customer(
+                    new EntityId(id),
+                    new Email(email),
+                    new BillingAddress(baseAddress.street, baseAddress.city, baseAddress.state, baseAddress.zipCode, baseAddress.country),
+                );
+
+                expectedCustomer.addBillingAddress(new BillingAddress(anotherAddress.street, anotherAddress.city, anotherAddress.state, anotherAddress.zipCode, anotherAddress.country))
+
+                mockRepository.findById.mockImplementation(async () => customer);
+
+
+                const billingAddressDTO = new BillingAddressDTO(anotherAddress.street, anotherAddress.city, anotherAddress.state, anotherAddress.zipCode, anotherAddress.country);
+                await expect(customerService.addBillingAddress(id, billingAddressDTO)).resolves.toBeUndefined();
+                expect(mockRepository.save).toHaveBeenCalledWith(expectedCustomer);
+
+
+            })
+
+            it('throw DomainConflictError if billing address already exist', async () => {
+                const id = UUID();
+
+                const customer = new Customer(
+                    new EntityId(id),
+                    new Email(email),
+                    new BillingAddress(baseAddress.street, baseAddress.city, baseAddress.state, baseAddress.zipCode, baseAddress.country)
+                );
+
+                mockRepository.findById.mockImplementation(async () => customer);
+
+                const billingAddressDTO = new BillingAddressDTO(baseAddress.street, baseAddress.city, baseAddress.state, baseAddress.zipCode, baseAddress.country);
+
+                const resultPromise = customerService.addBillingAddress(id, billingAddressDTO);
+
+                await expect(resultPromise).rejects.toThrow('This billing address already exist');
+                await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
+            })
+
+            it('throw EntityNotFoundError if customer doesn`t exist', async () => {
+                const id = UUID();
+
+                mockRepository.findById.mockImplementationOnce(async () => {
+                    return null;
+                });
+
+                const billingAddressDTO = new BillingAddressDTO(baseAddress.street, baseAddress.city, baseAddress.state, baseAddress.zipCode, baseAddress.country);
+
+                const resultPromise = customerService.addBillingAddress(id,billingAddressDTO);
+
+                await expect(resultPromise).rejects.toThrow("Entity not found with id " + id);
+                await expect(resultPromise).rejects.toBeInstanceOf(EntityNotFoundError);
+            });
         });
 
         it('throw EntityWithSameEmailAlreadyExistError', async () => {
