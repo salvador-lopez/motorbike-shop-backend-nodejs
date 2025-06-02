@@ -93,4 +93,8 @@ export class Customer {
         this._secondaryBillingAddress = billingAddress;
     }
 
+    get secondaryBillingAddress():BillingAddress | undefined {
+        return this._secondaryBillingAddress;
+    }
+
 }

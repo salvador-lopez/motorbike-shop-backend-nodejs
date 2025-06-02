@@ -59,6 +59,55 @@ describe("Customer Repository Integration Test", () => {
         }
     });
 
+    it("should save billing address", async () => {
+        const entityId = new EntityId(UUID());
+        const email = new Email("email@example.com");
+        const billingAddress = new BillingAddress('Montevideo','Uruguayan','Mexico','72000','Narnia');
+        const customer = new Customer(entityId, email);
+
+        await customerRepo.create(customer);
+
+        customer.addBillingAddress(billingAddress);
+
+        await customerRepo.save(customer);
+
+        const customerDataModel = await typeOrmRepo.findOneBy({ id: entityId.value });
+
+        expect(customerDataModel).not.toBeNull();
+        if (customerDataModel) {
+            expect(customerDataModel.id).toBe(entityId.value);
+            expect(customerDataModel.email).toBe(email.value);
+            expect(customerDataModel.availableCredit).toBe(0);
+            expect(customerDataModel.billingAddress).toEqual(billingAddress);
+        }
+    });
+
+    it("should save secondary billing address", async () => {
+        const entityId = new EntityId(UUID());
+        const email = new Email("email@example.com");
+        const billingAddress = new BillingAddress('Montevideo','Uruguayan','Mexico','72000','Mexico');
+        const secondaryBillingAddress = new BillingAddress('Paraguay','Parana','Entre Rios','3100','Argentina');
+        const customer = new Customer(entityId, email);
+
+        await customerRepo.create(customer);
+
+        customer.addBillingAddress(billingAddress);
+        customer.addBillingAddress(secondaryBillingAddress);
+
+        await customerRepo.save(customer);
+
+        const customerDataModel = await typeOrmRepo.findOneBy({ id: entityId.value });
+
+        expect(customerDataModel).not.toBeNull();
+        if (customerDataModel) {
+            expect(customerDataModel.id).toBe(entityId.value);
+            expect(customerDataModel.email).toBe(email.value);
+            expect(customerDataModel.availableCredit).toBe(0);
+            expect(customerDataModel.billingAddress).toEqual(billingAddress);
+            expect(customerDataModel.secondaryBillingAddress).toEqual(secondaryBillingAddress);
+        }
+    });
+
     it("should save a customer", async () => {
         const entityId = new EntityId(UUID());
         const email = new Email("email@example.com");
