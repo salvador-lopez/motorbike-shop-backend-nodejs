@@ -81,6 +81,10 @@ export class Customer {
             return;
         }
 
+        if(this._billingAddress && this._secondaryBillingAddress){
+            throw new DomainConflictError(`Maximum number of billing addresses reached.`)
+        }
+
         if(this._billingAddress.equal(billingAddress)){
 
             throw new DomainConflictError(`This billing address already exist`);

@@ -105,6 +105,14 @@ describe('CustomerService', () => {
                 country: 'Spain',
             };
 
+            const anotherAddress = {
+                street: 'Paraguay',
+                city: 'Parana',
+                state: 'Entre Rios',
+                zipCode: '3100',
+                country: 'Argentina',
+            }
+
             it.each([['street'], ['city'], ['state'], ['zipCode'], ['country']])(
                 "throw DomainConflictError when BillingAddress.%s is empty",
                 async (field) => {
@@ -154,13 +162,6 @@ describe('CustomerService', () => {
             it('should add secondary billing address if billing address exist', async () => {
                 const id = UUID();
 
-                const anotherAddress = {
-                    street: 'Paraguay',
-                    city: 'Parana',
-                    state: 'Entre Rios',
-                    zipCode: '3100',
-                    country: 'Argentina',
-                }
                 const customer = new Customer(
                     new EntityId(id),
                     new Email(email),
@@ -203,6 +204,28 @@ describe('CustomerService', () => {
                 await expect(resultPromise).rejects.toThrow('This billing address already exist');
                 await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
             })
+
+            it('throw DomainConflictError if the billing address limit is reached', async () => {
+                const id = UUID();
+
+                const customer = new Customer(
+                    new EntityId(id),
+                    new Email(email),
+                    new BillingAddress(baseAddress.street, baseAddress.city, baseAddress.state, baseAddress.zipCode, baseAddress.country)
+                );
+
+                customer.addBillingAddress(new BillingAddress(anotherAddress.street, anotherAddress.city, anotherAddress.state, anotherAddress.zipCode, anotherAddress.country))
+
+                mockRepository.findById.mockImplementation(async () => customer);
+
+                const thirdBillingAddress = new BillingAddressDTO("25 de Mayo",'CABA','Buenos Aires','3424','Argentina');
+
+                const resultPromise = customerService.addBillingAddress(id, thirdBillingAddress);
+
+                await expect(resultPromise).rejects.toThrow('Maximum number of billing addresses reached.');
+                await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
+            })
+
 
             it('throw EntityNotFoundError if customer doesn`t exist', async () => {
                 const id = UUID();
