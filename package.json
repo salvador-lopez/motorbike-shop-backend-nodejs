@@ -10,7 +10,6 @@
     "test:acceptance": "jest --testMatch='**/*.acceptance.test.ts'",
     "build": "tsc",
     "start": "node dist/server.js",
-    "dev:serverless": "serverless offline",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts"
   },
   "repository": {
@@ -24,7 +23,6 @@
   },
   "homepage": "https://github.com/salvador-lopez/motorbike-shop-backend-nodejs#readme",
   "dependencies": {
-    "@vendia/serverless-express": "^4.12.6",
     "express": "^4.21.2",
     "reflect-metadata": "^0.2.2",
     "sqlite3": "^5.1.7",
@@ -47,9 +45,6 @@
     "jest": "^29.7.0",
     "jest-mock-extended": "^4.0.0-beta1",
     "madge": "^8.0.0",
-    "serverless": "^3.40.0",
-    "serverless-offline": "^14.4.0",
-    "serverless-plugin-typescript": "^2.1.5",
     "supertest": "^7.1.0",
     "ts-jest": "^29.3.0",
     "ts-node-dev": "^2.0.0",

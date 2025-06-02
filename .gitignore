@@ -116,9 +116,6 @@ dist
 # Docusaurus cache and generated files
 .docusaurus
 
-# Serverless directories
-.serverless/
-
 # FuseBox cache
 .fusebox/
 
