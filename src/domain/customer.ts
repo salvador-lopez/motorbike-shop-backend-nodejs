@@ -54,7 +54,7 @@ export class Customer {
     readonly email: Email;
     private _availableCredit: Credit
     private _billingAddress?: BillingAddress;
-    private _secondaryBillingAddress?: BillingAddress
+    private _availableBillingAddresses: BillingAddress[] = []
 
     constructor(id: EntityId, email: Email, billingAddress?: BillingAddress) {
         this.id = id;
@@ -81,16 +81,19 @@ export class Customer {
             return;
         }
 
-        if(this._billingAddress && this._secondaryBillingAddress){
+        if(this._availableBillingAddresses.length >= 2){
             throw new DomainConflictError(`Maximum number of billing addresses reached.`)
         }
 
-        if(this._billingAddress.equal(billingAddress)){
-
+        if(this._billingAddress.equal(billingAddress) ||
+           this.availableBillingAddresses.some((availableBillingAddress)=> availableBillingAddress.equal(billingAddress))){
             throw new DomainConflictError(`This billing address already exist`);
         }
 
-        this._secondaryBillingAddress = billingAddress;
+        this._availableBillingAddresses.push(billingAddress);
     }
 
+    get availableBillingAddresses():BillingAddress[]  {
+        return this._availableBillingAddresses;
+    }
 }

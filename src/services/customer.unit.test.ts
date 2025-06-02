@@ -181,6 +181,7 @@ describe('CustomerService', () => {
 
                 const billingAddressDTO = new BillingAddressDTO(anotherAddress.street, anotherAddress.city, anotherAddress.state, anotherAddress.zipCode, anotherAddress.country);
                 await expect(customerService.addBillingAddress(id, billingAddressDTO)).resolves.toBeUndefined();
+                expect(expectedCustomer.availableBillingAddresses.length).toBe(1);
                 expect(mockRepository.save).toHaveBeenCalledWith(expectedCustomer);
 
 
@@ -215,13 +216,14 @@ describe('CustomerService', () => {
                 );
 
                 customer.addBillingAddress(new BillingAddress(anotherAddress.street, anotherAddress.city, anotherAddress.state, anotherAddress.zipCode, anotherAddress.country))
+                customer.addBillingAddress(new BillingAddress('25 de Mayo', 'Cordoba', 'Cordoba', '3243', 'Argentina'));
 
                 mockRepository.findById.mockImplementation(async () => customer);
 
-                const thirdBillingAddress = new BillingAddressDTO("25 de Mayo",'CABA','Buenos Aires','3424','Argentina');
+                const quarterBillingAddress = new BillingAddressDTO("1 de Mayo",'CABA','Buenos Aires','3400','Argentina');
 
-                const resultPromise = customerService.addBillingAddress(id, thirdBillingAddress);
-
+                const resultPromise = customerService.addBillingAddress(id, quarterBillingAddress);
+                      expect(customer.availableBillingAddresses.length).toBe(2);
                 await expect(resultPromise).rejects.toThrow('Maximum number of billing addresses reached.');
                 await expect(resultPromise).rejects.toBeInstanceOf(DomainConflictError);
             })
