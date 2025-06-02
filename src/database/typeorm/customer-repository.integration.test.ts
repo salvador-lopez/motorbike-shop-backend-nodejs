@@ -59,6 +59,60 @@ describe("Customer Repository Integration Test", () => {
         }
     });
 
+    it("should save billing address", async () => {
+        const entityId = new EntityId(UUID());
+        const email = new Email("email@example.com");
+        const billingAddress = new BillingAddress('Montevideo','Uruguayan','Mexico','72000','Narnia');
+        const customer = new Customer(entityId, email);
+
+        await customerRepo.create(customer);
+
+        customer.addBillingAddress(billingAddress);
+
+        await customerRepo.save(customer);
+
+        const customerDataModel = await typeOrmRepo.findOneBy({ id: entityId.value });
+
+        expect(customerDataModel).not.toBeNull();
+        if (customerDataModel) {
+            expect(customerDataModel.id).toBe(entityId.value);
+            expect(customerDataModel.email).toBe(email.value);
+            expect(customerDataModel.availableCredit).toBe(0);
+            expect(customerDataModel.billingAddress).toEqual(billingAddress);
+        }
+    });
+
+    it("should save secondary billing address", async () => {
+        const entityId = new EntityId(UUID());
+        const email = new Email("email@example.com");
+        const billingAddress = new BillingAddress('Montevideo','Uruguayan','Mexico','72000','Mexico');
+        const secondBillingAddress = new BillingAddress('Paraguay','Parana','Entre Rios','3100','Argentina');
+        const thirdBillingAddress = new BillingAddress('Libertad','Parana','Entre Rios','3100','Argentina');
+        const customer = new Customer(entityId, email);
+
+        await customerRepo.create(customer);
+
+        customer.addBillingAddress(billingAddress);
+        customer.addBillingAddress(secondBillingAddress);
+        customer.addBillingAddress(thirdBillingAddress);
+
+        await customerRepo.save(customer);
+
+        const customerDataModel = await typeOrmRepo.findOneBy({ id: entityId.value });
+
+        expect(customerDataModel).not.toBeNull();
+        if (customerDataModel) {
+            expect(customerDataModel.id).toBe(entityId.value);
+            expect(customerDataModel.email).toBe(email.value);
+            expect(customerDataModel.availableCredit).toBe(0);
+            expect(customerDataModel.billingAddress).toEqual(billingAddress);
+            expect(customerDataModel.availableBillingAddress.length).toEqual(2);
+            expect(customerDataModel.availableBillingAddress).toEqual([secondBillingAddress,thirdBillingAddress]);
+
+        }
+    });
+
+
     it("should save a customer", async () => {
         const entityId = new EntityId(UUID());
         const email = new Email("email@example.com");

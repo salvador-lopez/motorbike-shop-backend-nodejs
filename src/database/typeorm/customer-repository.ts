@@ -55,7 +55,7 @@ export class TypeOrmCustomerRepository implements CustomerRepository {
 
     async save(customer: Customer): Promise<void> {
         await this.typeOrmRepo.save(
-            new TypeOrmCustomer(customer.id.value, customer.email.value, customer.availableCredit.value)
+            new TypeOrmCustomer(customer.id.value, customer.email.value, customer.availableCredit.value, customer.billingAddress, customer.availableBillingAddresses)
         );
 
     }
