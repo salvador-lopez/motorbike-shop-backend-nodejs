@@ -30,6 +30,18 @@ export class BillingAddress {
         this.country = country;
     }
 
+    public equal(addressToCompare: BillingAddress):boolean{
+        return this.normalize(this.street) === this.normalize(addressToCompare.street)
+            && this.normalize(this.city) === this.normalize(addressToCompare.city)
+            && this.normalize(this.state) === this.normalize(addressToCompare.state)
+            && this.normalize(this.zipCode) === this.normalize(addressToCompare.zipCode)
+            && this.normalize(this.country) === this.normalize(addressToCompare.country);
+    }
+
+    private normalize(value: string): string {
+        return value.trim().toLowerCase();
+    }
+
     private assertNonEmpty(fieldName: string, value: string) {
         if (value.trim().length === 0) {
             throw new DomainConflictError(`BillingAddress: '${fieldName}' must be a non-empty string`);
@@ -42,7 +54,7 @@ export class Customer {
     readonly email: Email;
     private _availableCredit: Credit
     private _billingAddress?: BillingAddress;
-    private _secundaryBillingAddress?: BillingAddress
+    private _secondaryBillingAddress?: BillingAddress
 
     constructor(id: EntityId, email: Email, billingAddress?: BillingAddress) {
         this.id = id;
@@ -68,18 +80,13 @@ export class Customer {
             this._billingAddress = billingAddress;
             return;
         }
-        const {street, city, zipCode, country, state} = billingAddress
 
-        if(street.toLowerCase() === this._billingAddress.street.toLowerCase() &&
-           city.toLowerCase() === this._billingAddress.city.toLowerCase() &&
-           zipCode.toLowerCase() === this._billingAddress.zipCode.toLowerCase() &&
-           country.toLowerCase() === this._billingAddress.country.toLowerCase() &&
-           state.toLowerCase() === this._billingAddress.state.toLowerCase()){
+        if(this._billingAddress.equal(billingAddress)){
 
             throw new DomainConflictError(`This billing address already exist`);
         }
 
-        this._secundaryBillingAddress = billingAddress;
+        this._secondaryBillingAddress = billingAddress;
     }
 
 }
