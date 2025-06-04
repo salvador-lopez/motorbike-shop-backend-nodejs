@@ -23,11 +23,23 @@ export class BillingAddress {
         this.assertNonEmpty('state', state);
         this.assertNonEmpty('zipCode', zipCode);
         this.assertNonEmpty('country', country);
-        this.street = street;
-        this.city = city;
-        this.state = state;
-        this.zipCode = zipCode;
-        this.country = country;
+        this.street = this.normalize(street);
+        this.city = this.normalize(city);
+        this.state = this.normalize(state);
+        this.zipCode = this.normalize(zipCode);
+        this.country = this.normalize(country);
+    }
+
+    public equal(addressToCompare: BillingAddress):boolean{
+        return this.street === addressToCompare.street
+            && this.city === addressToCompare.city
+            && this.state === addressToCompare.state
+            && this.zipCode === addressToCompare.zipCode
+            && this.country === addressToCompare.country;
+    }
+
+    private normalize(value: string): string {
+        return value.trim().toLowerCase();
     }
 
     private assertNonEmpty(fieldName: string, value: string) {
@@ -42,6 +54,7 @@ export class Customer {
     readonly email: Email;
     private _availableCredit: Credit
     private _billingAddress?: BillingAddress;
+    private _secondaryBillingAddress?: BillingAddress
 
     constructor(id: EntityId, email: Email, billingAddress?: BillingAddress) {
         this.id = id;
@@ -61,4 +74,27 @@ export class Customer {
     get billingAddress(): BillingAddress | undefined {
         return this._billingAddress;
     }
+
+    addBillingAddress(billingAddress:BillingAddress){
+        if(!this._billingAddress){
+            this._billingAddress = billingAddress;
+            return;
+        }
+
+        if(this._billingAddress && this._secondaryBillingAddress){
+            throw new DomainConflictError(`Maximum number of billing addresses reached.`)
+        }
+
+        if(this._billingAddress.equal(billingAddress)){
+
+            throw new DomainConflictError(`This billing address already exist`);
+        }
+
+        this._secondaryBillingAddress = billingAddress;
+    }
+
+    get secondaryBillingAddress():BillingAddress | undefined {
+        return this._secondaryBillingAddress;
+    }
+
 }

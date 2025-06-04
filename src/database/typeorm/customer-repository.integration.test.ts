@@ -23,7 +23,7 @@ afterAll(async () => {
 });
 
 describe("Customer Repository Integration Test", () => {
-    it("should create a new customer without billing address", async () => {
+    it("should create a new customer with mandatory data", async () => {
         const entityId = new EntityId(UUID());
         const email = new Email("email@example.com");
         const customer = new Customer(entityId, email);
@@ -40,7 +40,7 @@ describe("Customer Repository Integration Test", () => {
         }
     });
 
-    it("should create a new customer with billing address", async () => {
+    it("should create a new customer with mandatory and optional data", async () => {
         const entityId = new EntityId(UUID());
         const email = new Email("email@example.com");
         const billingAddress = new BillingAddress('Montevideo','Uruapan','Mexico','72000','Narnia');
@@ -58,11 +58,16 @@ describe("Customer Repository Integration Test", () => {
             expect(customerDataModel.billingAddress).toEqual(billingAddress);
         }
     });
-
+    
     it("should save a customer", async () => {
         const entityId = new EntityId(UUID());
         const email = new Email("email@example.com");
         const customer = new Customer(entityId, email);
+        const billingAddress = new BillingAddress('Montevideo','Uruguayan','Mexico','72000','Mexico');
+        const secondaryBillingAddress = new BillingAddress('Paraguay','Parana','Entre Rios','3100','Argentina');
+
+        customer.addBillingAddress(billingAddress)
+        customer.addBillingAddress(secondaryBillingAddress)
 
         await customerRepo.save(customer);
 

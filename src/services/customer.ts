@@ -79,6 +79,22 @@ export class CustomerService {
 
         await this.repository.save(customer);
     }
+
+    async addBillingAddress(id: string,billingAddressDTO: BillingAddressDTO){
+        const {street,city,state,zipCode,country} = billingAddressDTO
+        const billingAddress = new BillingAddress(street,city,state,zipCode,country);
+        const entityId = new EntityId(id);
+
+        const customer = await this.repository.findById(entityId);
+
+        if (!customer) {
+            throw new EntityNotFoundError(entityId);
+        }
+
+        customer.addBillingAddress(billingAddress)
+
+        await this.repository.save(customer);
+    }
 }
 
 export class CustomerDTO {
