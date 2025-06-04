@@ -23,19 +23,19 @@ export class BillingAddress {
         this.assertNonEmpty('state', state);
         this.assertNonEmpty('zipCode', zipCode);
         this.assertNonEmpty('country', country);
-        this.street = street;
-        this.city = city;
-        this.state = state;
-        this.zipCode = zipCode;
-        this.country = country;
+        this.street = this.normalize(street);
+        this.city = this.normalize(city);
+        this.state = this.normalize(state);
+        this.zipCode = this.normalize(zipCode);
+        this.country = this.normalize(country);
     }
 
     public equal(addressToCompare: BillingAddress):boolean{
-        return this.normalize(this.street) === this.normalize(addressToCompare.street)
-            && this.normalize(this.city) === this.normalize(addressToCompare.city)
-            && this.normalize(this.state) === this.normalize(addressToCompare.state)
-            && this.normalize(this.zipCode) === this.normalize(addressToCompare.zipCode)
-            && this.normalize(this.country) === this.normalize(addressToCompare.country);
+        return this.street === addressToCompare.street
+            && this.city === addressToCompare.city
+            && this.state === addressToCompare.state
+            && this.zipCode === addressToCompare.zipCode
+            && this.country === addressToCompare.country;
     }
 
     private normalize(value: string): string {
