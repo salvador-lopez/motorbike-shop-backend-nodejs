@@ -5,12 +5,16 @@ import {
     EntityWithSameEmailAlreadyExistError,
     EntityWithSameIdAlreadyExistError
 } from "../domain/errors";
+import {ICache} from "./cache";
 
 export class CustomerService {
     private repository: CustomerRepository;
+    private cache: ICache
 
-    constructor(customerRepository: CustomerRepository) {
+    constructor(customerRepository: CustomerRepository,
+                customerCache:ICache) {
         this.repository = customerRepository;
+        this.cache = customerCache;
     }
 
     async create(id: string, email: string, billingAddressDTO?: BillingAddressDTO): Promise<void> {
@@ -33,6 +37,9 @@ export class CustomerService {
     }
 
     async get(id: string): Promise<CustomerDTO> {
+        const cached = await this.cache.get<CustomerDTO>(id);
+        if(cached) return cached;
+
         const entityId = new EntityId(id);
         const customer = await this.repository.findById(entityId);
 
@@ -40,15 +47,25 @@ export class CustomerService {
             throw new EntityNotFoundError(entityId);
         }
 
-        return this.buildCustomerDTO(customer);
+        const customerDto = this.buildCustomerDTO(customer);
+        await this.cache.set(customerDto.id,customerDto);
+
+        return customerDto
     }
 
     async getAll(): Promise<CustomerDTO[]> {
-        const customers = await this.repository.findAll();
+        const cacheKey = 'customers:all';
+        const cached = await this.cache.get<CustomerDTO[]>(cacheKey);
+        if (cached) return cached;
 
-        return customers.map(
+        const customers = await this.repository.findAll();
+        const customersDto = customers.map(
             customer => this.buildCustomerDTO(customer)
         );
+
+        await this.cache.set(cacheKey, customersDto);
+
+        return customersDto
     }
 
     private buildCustomerDTO(customer: Customer) {
