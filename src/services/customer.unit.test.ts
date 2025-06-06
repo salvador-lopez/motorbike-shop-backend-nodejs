@@ -10,11 +10,11 @@ import {
     EntityWithSameIdAlreadyExistError
 } from "../domain/errors";
 import {EntityId, Email, Credit} from "../domain/common";
-import {ICache} from "./cache";
+import { CustomerCache } from "./cache";
 
 describe('CustomerService', () => {
     const mockRepository = mock<CustomerRepository>();
-    const mockCache = mock<ICache>();
+    const mockCache = mock<CustomerCache>();
     const customerService = new CustomerService(mockRepository,mockCache)
 
     beforeEach(() => {
@@ -302,11 +302,10 @@ describe('CustomerService', () => {
             const id = UUID();
             const email = "email@example.com";
             const availableCredit = 0;
-            const entityId = new EntityId(id);
             const expectedCustomerDTO = new CustomerDTO(id, email, availableCredit);
 
             mockCache.get.mockImplementationOnce( async () => {
-                return expectedCustomerDTO as any
+                return expectedCustomerDTO
             });
 
             const customerDTOFound = await customerService.get(id);
@@ -357,16 +356,14 @@ describe('CustomerService', () => {
             ];
 
             const customerDTOsFound = await customerService.getAll();
-            expect(mockCache.get).toHaveBeenCalledTimes(1);
+            expect(mockCache.getAll).toHaveBeenCalledTimes(1);
             expect(customerDTOsFound).toEqual(expectedCustomerDTOs);
         });
 
         it('all cached', async () => {
             const userAId = UUID();
-            const userAEntityId = new EntityId(userAId);
             const userAEmail = "userAEmail@example.com";
             const userBId = UUID();
-            const userBEntityId = new EntityId(userBId);
             const userBEmail = "userBemail@example.com";
             const availableCredit = 0;
 
@@ -375,14 +372,14 @@ describe('CustomerService', () => {
                 new CustomerDTO(userBId, userBEmail, availableCredit)
             ];
 
-            mockCache.get.mockImplementationOnce( async () => {
-                return expectedCustomerDTOs as any
+            mockCache.getAll.mockImplementationOnce( async () => {
+                return  expectedCustomerDTOs
             })
 
             const customerDTOsFound = await customerService.getAll();
 
             expect(customerDTOsFound).toEqual(expectedCustomerDTOs);
-            expect(mockCache.get).toHaveBeenCalledTimes(1);
+            expect(mockCache.getAll).toHaveBeenCalledTimes(1);
             expect(mockRepository.findAll).toHaveBeenCalledTimes(0);
         });
     });
