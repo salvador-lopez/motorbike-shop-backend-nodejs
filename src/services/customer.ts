@@ -5,14 +5,14 @@ import {
     EntityWithSameEmailAlreadyExistError,
     EntityWithSameIdAlreadyExistError
 } from "../domain/errors";
-import {ICache} from "./cache";
+import {CustomerCache} from "./cache";
 
 export class CustomerService {
     private repository: CustomerRepository;
-    private cache: ICache
+    private cache: CustomerCache;
 
     constructor(customerRepository: CustomerRepository,
-                customerCache:ICache) {
+                customerCache: CustomerCache,) {
         this.repository = customerRepository;
         this.cache = customerCache;
     }
@@ -37,7 +37,7 @@ export class CustomerService {
     }
 
     async get(id: string): Promise<CustomerDTO> {
-        const cached = await this.cache.get<CustomerDTO>(id);
+        const cached = await this.cache.get(id);
         if(cached) return cached;
 
         const entityId = new EntityId(id);
@@ -47,25 +47,28 @@ export class CustomerService {
             throw new EntityNotFoundError(entityId);
         }
 
-        const customerDto = this.buildCustomerDTO(customer);
-        await this.cache.set(customerDto.id,customerDto);
+        const customerDTO = this.buildCustomerDTO(customer);
 
-        return customerDto
+        const ttl = 10;
+        await this.cache.set(customerDTO, ttl);
+
+        return customerDTO;
     }
 
     async getAll(): Promise<CustomerDTO[]> {
-        const cacheKey = 'customers:all';
-        const cached = await this.cache.get<CustomerDTO[]>(cacheKey);
+        const cached = await this.cache.getAll();
         if (cached) return cached;
 
         const customers = await this.repository.findAll();
-        const customersDto = customers.map(
+
+        const customerDTOs = customers.map(
             customer => this.buildCustomerDTO(customer)
         );
 
-        await this.cache.set(cacheKey, customersDto);
+        const ttl = 10;
+        customerDTOs.forEach(customerDTO => {this.cache.set(customerDTO, ttl)})
 
-        return customersDto
+        return customerDTOs;
     }
 
     private buildCustomerDTO(customer: Customer) {

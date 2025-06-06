@@ -1,12 +1,9 @@
 
-export interface CacheOptions {
-    ttl?: number;
-}
+import {CustomerDTO} from "./customer";
 
-export interface ICache{
-
-    get:<T>(key:string)=> Promise<T | null>;
-
-    set:<T>( key:string, value: T, options?: CacheOptions)=> void;
+export interface CustomerCache {
+    set:(customer:CustomerDTO, ttl: number)=> Promise<void>;
+    get:(id:string)=> Promise<CustomerDTO | null>;
+    getAll:()=> Promise<CustomerDTO[] | null>;
 }
 
