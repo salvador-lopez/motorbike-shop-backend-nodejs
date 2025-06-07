@@ -1,12 +1,10 @@
 import {v4 as UUID} from "uuid";
 import {CustomerDTO} from "./customer";
-import {InMemoryCustomerCache, CustomerCache} from "./cache";
+import {InMemoryCustomerCache} from "./cache";
 
 describe("InMemoryCustomerCache", () => {
-    class SpyInMemoryCustomerCache extends InMemoryCustomerCache {
-    }
 
-    let cacheService: CustomerCache;
+    let cacheService: InMemoryCustomerCache;
     let memory: Map<string, CustomerDTO>;
 
     const ttl = 10000;
