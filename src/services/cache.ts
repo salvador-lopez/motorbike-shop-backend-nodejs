@@ -7,22 +7,22 @@ export interface CustomerCache {
     getAll:()=> Promise<CustomerDTO[]>;
 }
 
-export class CacheCustomerService implements CustomerCache {
-    private cacheInMemory: Map<string, CustomerDTO> = new Map();
+export class InMemoryCustomerCache implements CustomerCache {
+    private cache: Map<string, CustomerDTO> = new Map();
 
     async get(id: string): Promise<CustomerDTO | null> {
-        return this.cacheInMemory.get(id) ?? null;
+        return this.cache.get(id) ?? null;
     }
 
     async getAll(): Promise<CustomerDTO[]> {
-        return  [...this.cacheInMemory.values()]
+        return  [...this.cache.values()]
     }
 
     async set(customerDto: CustomerDTO, ttl: number): Promise<void> {
-        this.cacheInMemory.set(customerDto.id, customerDto);
+        this.cache.set(customerDto.id, customerDto);
 
         setTimeout(() => {
-            this.cacheInMemory.delete(customerDto.id);
+            this.cache.delete(customerDto.id);
         }, ttl);
     }
 }

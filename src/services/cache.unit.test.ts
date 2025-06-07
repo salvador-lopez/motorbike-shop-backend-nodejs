@@ -1,6 +1,6 @@
 import {v4 as UUID} from "uuid";
 import {CustomerDTO} from "./customer";
-import {CacheCustomerService, CustomerCache} from "./cache";
+import {InMemoryCustomerCache, CustomerCache} from "./cache";
 
 let cacheService: CustomerCache;
 
@@ -8,7 +8,7 @@ const ttl = 10000;
 
 beforeEach(async () => {
     jest.useFakeTimers();
-    cacheService = new CacheCustomerService();
+    cacheService = new InMemoryCustomerCache();
 
 });
 
