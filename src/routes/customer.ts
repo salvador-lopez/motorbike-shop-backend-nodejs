@@ -1,9 +1,10 @@
 import {Router} from "express";
 import {getDataSource} from "../database/typeorm/data-source";
-import {CustomerService} from "../services/customer";
+import {CustomerDTO, CustomerService} from "../services/customer";
 import {TypeOrmCustomer} from "../database/typeorm/data-model";
 import {TypeOrmCustomerRepository} from "../database/typeorm/customer-repository";
 import {CustomerController} from "../controllers/rest/customer";
+import {InMemoryCustomerCache} from "../services/cache";
 
 const createRouter = (customerController: CustomerController): Router => {
     const router = Router();
@@ -219,8 +220,12 @@ const createRouter = (customerController: CustomerController): Router => {
     return router;
 };
 
+const memory = new Map<string, CustomerDTO>();
+const inMemoryCustomerCacheInstance = new InMemoryCustomerCache(memory);
+
 const customerServiceInstance = new CustomerService(
-    new TypeOrmCustomerRepository(getDataSource().getRepository(TypeOrmCustomer))
+    new TypeOrmCustomerRepository(getDataSource().getRepository(TypeOrmCustomer)),
+    inMemoryCustomerCacheInstance
 );
 const customerControllerInstance = new CustomerController(customerServiceInstance);
 

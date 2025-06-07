@@ -10,13 +10,16 @@ import {
     EntityWithSameIdAlreadyExistError
 } from "../domain/errors";
 import {EntityId, Email, Credit} from "../domain/common";
+import { CustomerCache } from "./cache";
 
 describe('CustomerService', () => {
     const mockRepository = mock<CustomerRepository>();
-    const customerService = new CustomerService(mockRepository)
+    const mockCache = mock<CustomerCache>();
+    const customerService = new CustomerService(mockRepository,mockCache)
 
     beforeEach(() => {
         mockReset(mockRepository);
+        mockReset(mockCache);
     });
 
     describe('create', () => {
@@ -281,6 +284,8 @@ describe('CustomerService', () => {
 
             const entityId = new EntityId(id);
 
+            mockCache.get.mockImplementationOnce( async () => null)
+
             mockRepository.findById.mockImplementationOnce(async () => {
                 return new Customer(entityId, new Email(email));
             });
@@ -289,7 +294,25 @@ describe('CustomerService', () => {
             const customerDTOFound = await customerService.get(id);
 
             expect(customerDTOFound).toEqual(expectedCustomerDTO);
+            expect(mockCache.get).toHaveBeenCalledTimes(1);
             expect(mockRepository.findById).toHaveBeenCalledWith(entityId);
+        });
+
+        it('happy path get cached customer', async () => {
+            const id = UUID();
+            const email = "email@example.com";
+            const availableCredit = 0;
+            const expectedCustomerDTO = new CustomerDTO(id, email, availableCredit);
+
+            mockCache.get.mockImplementationOnce( async () => {
+                return expectedCustomerDTO
+            });
+
+            const customerDTOFound = await customerService.get(id);
+
+            expect(customerDTOFound).toEqual(expectedCustomerDTO);
+            expect(mockCache.get).toHaveBeenCalledTimes(1);
+            expect(mockRepository.findById).toHaveBeenCalledTimes(0);
         });
 
         it('throw EntityNotFoundError', async () => {
@@ -321,6 +344,8 @@ describe('CustomerService', () => {
                 new Customer(userBEntityId, new Email(userBEmail))
             ];
 
+            mockCache.getAll.mockImplementationOnce( async () => [])
+
             mockRepository.findAll.mockImplementationOnce(async () => {
                 return customers;
             });
@@ -331,8 +356,31 @@ describe('CustomerService', () => {
             ];
 
             const customerDTOsFound = await customerService.getAll();
+            expect(mockCache.getAll).toHaveBeenCalledTimes(1);
+            expect(customerDTOsFound).toEqual(expectedCustomerDTOs);
+        });
+
+        it('all cached', async () => {
+            const userAId = UUID();
+            const userAEmail = "userAEmail@example.com";
+            const userBId = UUID();
+            const userBEmail = "userBemail@example.com";
+            const availableCredit = 0;
+
+            const expectedCustomerDTOs: CustomerDTO[] = [
+                new CustomerDTO(userAId, userAEmail, availableCredit),
+                new CustomerDTO(userBId, userBEmail, availableCredit)
+            ];
+
+            mockCache.getAll.mockImplementationOnce( async () => {
+                return  expectedCustomerDTOs
+            })
+
+            const customerDTOsFound = await customerService.getAll();
 
             expect(customerDTOsFound).toEqual(expectedCustomerDTOs);
+            expect(mockCache.getAll).toHaveBeenCalledTimes(1);
+            expect(mockRepository.findAll).toHaveBeenCalledTimes(0);
         });
     });
 
