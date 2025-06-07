@@ -344,7 +344,7 @@ describe('CustomerService', () => {
                 new Customer(userBEntityId, new Email(userBEmail))
             ];
 
-            mockCache.get.mockImplementationOnce( async () => null)
+            mockCache.getAll.mockImplementationOnce( async () => [])
 
             mockRepository.findAll.mockImplementationOnce(async () => {
                 return customers;

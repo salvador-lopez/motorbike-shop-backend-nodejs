@@ -57,7 +57,7 @@ export class CustomerService {
 
     async getAll(): Promise<CustomerDTO[]> {
         const cached = await this.cache.getAll();
-        if (cached) return cached;
+        if (cached.length) return cached;
 
         const customers = await this.repository.findAll();
 
