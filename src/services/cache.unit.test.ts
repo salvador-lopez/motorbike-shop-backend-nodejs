@@ -1,38 +1,39 @@
 import {v4 as UUID} from "uuid";
 import {CustomerDTO} from "./customer";
-import {CacheCustomerService, CustomerCache} from "./cache";
+import {InMemoryCustomerCache} from "./cache";
 
-let cacheService: CustomerCache;
+describe("InMemoryCustomerCache", () => {
 
-beforeEach(async () => {
-    cacheService = new CacheCustomerService();
+    let cacheService: InMemoryCustomerCache;
+    let memory: Map<string, CustomerDTO>;
 
-});
+    const ttl = 10000;
 
-const delay1300ms =()=> new Promise((resolve) => {
+    beforeEach(async () => {
+        jest.useFakeTimers();
+        memory = new Map<string, CustomerDTO>();
+        cacheService = new InMemoryCustomerCache(memory);
+    });
 
-    setTimeout(()=> {
-        resolve(true)
-    },1100)
-})
+    afterEach(async () => {
+        expireCache();
+        jest.useRealTimers();
+    });
 
-describe("Customer Cache Integration Test", () => {
+    function expireCache() {
+        jest.advanceTimersByTime(ttl);
+        jest.runOnlyPendingTimers();
+    }
+
     it("should cache a customerDto", async () => {
         const id = UUID()
         const email = "email@example.com";
         const availableCredit = 0;
-        const customerDTO = new CustomerDTO(id, email,availableCredit);
+        const expectedCustomerDTO = new CustomerDTO(id, email,availableCredit);
 
-        await cacheService.set(customerDTO, 1000);
+        await cacheService.set(expectedCustomerDTO, ttl);
 
-        const customerCachedDTO = await cacheService.get(id);
-
-        expect(customerCachedDTO).not.toBeNull();
-        if (customerCachedDTO !== null) {
-            expect(customerCachedDTO.id).toBe(id);
-            expect(customerCachedDTO.email).toBe(email);
-            expect(customerCachedDTO.availableCredit).toBe(0);
-        }
+        expect(memory.get(id)).toBe(expectedCustomerDTO);
     });
 
     it("should get all customerDto cached", async () => {
@@ -40,32 +41,22 @@ describe("Customer Cache Integration Test", () => {
         const customerDTO2 = new CustomerDTO(UUID(),'example2@gmail.com',2)
         const customerDTO3 = new CustomerDTO(UUID(),'example3@gmail.com',3)
 
-        await cacheService.set(customerDTO1, 1000);
-        await cacheService.set(customerDTO2, 1000);
-        await cacheService.set(customerDTO3, 1000);
+        memory.set(customerDTO1.id, customerDTO1)
+            .set(customerDTO2.id, customerDTO2)
+            .set(customerDTO3.id, customerDTO3);
 
         const customerCachedDTOs = await cacheService.getAll();
 
-        expect(customerCachedDTOs).not.toBeNull();
-        if (customerCachedDTOs !== null) {
-            expect(customerCachedDTOs.length).toBe(3);
-
-        }
+        expect(customerCachedDTOs).toEqual([customerDTO1, customerDTO2, customerDTO3]);
     });
 
     it("should return null if ttl expires", async () => {
         const id = UUID()
-        const customerDTO1 = new CustomerDTO(id,'example1@gmail.com',1)
+        const customerDTO = new CustomerDTO(id,'example1@gmail.com',1)
 
-        await cacheService.set(customerDTO1, 1000);
+        await cacheService.set(customerDTO, ttl);
+        expireCache();
 
-        const customerShouldExist = await cacheService.get(id);
-        expect(customerShouldExist).not.toBeNull();
-
-        await delay1300ms()
-
-        const customerShouldNull = await cacheService.get(id);
-
-        expect(customerShouldNull).toBeNull();
+        expect(await cacheService.get(id)).toBeNull();
     });
 })
