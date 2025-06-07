@@ -3,13 +3,18 @@ import {CustomerDTO} from "./customer";
 import {InMemoryCustomerCache, CustomerCache} from "./cache";
 
 describe("InMemoryCustomerCache", () => {
+    class SpyInMemoryCustomerCache extends InMemoryCustomerCache {
+    }
+
     let cacheService: CustomerCache;
+    let memory: Map<string, CustomerDTO>;
 
     const ttl = 10000;
 
     beforeEach(async () => {
         jest.useFakeTimers();
-        cacheService = new InMemoryCustomerCache();
+        memory = new Map<string, CustomerDTO>();
+        cacheService = new InMemoryCustomerCache(memory);
     });
 
     afterEach(async () => {
@@ -30,9 +35,7 @@ describe("InMemoryCustomerCache", () => {
 
         await cacheService.set(expectedCustomerDTO, ttl);
 
-        const customerCachedDTO = await cacheService.get(id);
-
-        expect(customerCachedDTO).toBe(expectedCustomerDTO);
+        expect(memory.get(id)).toBe(expectedCustomerDTO);
     });
 
     it("should get all customerDto cached", async () => {
@@ -40,14 +43,13 @@ describe("InMemoryCustomerCache", () => {
         const customerDTO2 = new CustomerDTO(UUID(),'example2@gmail.com',2)
         const customerDTO3 = new CustomerDTO(UUID(),'example3@gmail.com',3)
 
-        await cacheService.set(customerDTO1, ttl);
-        await cacheService.set(customerDTO2, ttl);
-        await cacheService.set(customerDTO3, ttl);
+        memory.set(customerDTO1.id, customerDTO1)
+            .set(customerDTO2.id, customerDTO2)
+            .set(customerDTO3.id, customerDTO3);
 
         const customerCachedDTOs = await cacheService.getAll();
 
-        expect(customerCachedDTOs.length).toBe(3);
-        expireCache();
+        expect(customerCachedDTOs).toEqual([customerDTO1, customerDTO2, customerDTO3]);
     });
 
     it("should return null if ttl expires", async () => {
@@ -55,7 +57,6 @@ describe("InMemoryCustomerCache", () => {
         const customerDTO = new CustomerDTO(id,'example1@gmail.com',1)
 
         await cacheService.set(customerDTO, ttl);
-
         expireCache();
 
         expect(await cacheService.get(id)).toBeNull();

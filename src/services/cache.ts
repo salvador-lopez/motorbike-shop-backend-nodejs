@@ -8,21 +8,25 @@ export interface CustomerCache {
 }
 
 export class InMemoryCustomerCache implements CustomerCache {
-    private cache: Map<string, CustomerDTO> = new Map();
+    private memory: Map<string, CustomerDTO>;
+
+    constructor(memory: Map<string, CustomerDTO>) {
+        this.memory = memory;
+    }
 
     async get(id: string): Promise<CustomerDTO | null> {
-        return this.cache.get(id) ?? null;
+        return this.memory.get(id) ?? null;
     }
 
     async getAll(): Promise<CustomerDTO[]> {
-        return  [...this.cache.values()]
+        return  [...this.memory.values()]
     }
 
     async set(customerDto: CustomerDTO, ttl: number): Promise<void> {
-        this.cache.set(customerDto.id, customerDto);
+        this.memory.set(customerDto.id, customerDto);
 
         setTimeout(() => {
-            this.cache.delete(customerDto.id);
+            this.memory.delete(customerDto.id);
         }, ttl);
     }
 }
