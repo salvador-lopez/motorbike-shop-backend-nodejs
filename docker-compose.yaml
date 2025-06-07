@@ -8,3 +8,10 @@ services:
     - "3000:3000"   # API port
     - "9229:9229"   # Debugging port for Node.js
     command: tail -f /dev/null
+    depends_on:
+      - redis
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
