@@ -2,27 +2,25 @@ import {v4 as UUID} from "uuid";
 import {CustomerDTO} from "./customer";
 import {InMemoryCustomerCache, CustomerCache} from "./cache";
 
-let cacheService: CustomerCache;
-
-const ttl = 10000;
-
-beforeEach(async () => {
-    jest.useFakeTimers();
-    cacheService = new InMemoryCustomerCache();
-
-});
-
-afterEach(async () => {
-    expireCache();
-    jest.useRealTimers();
-});
-
-function expireCache() {
-    jest.advanceTimersByTime(ttl);
-    jest.runOnlyPendingTimers();
-}
-
 describe("InMemoryCustomerCache", () => {
+    let cacheService: CustomerCache;
+
+    const ttl = 10000;
+
+    beforeEach(async () => {
+        jest.useFakeTimers();
+        cacheService = new InMemoryCustomerCache();
+    });
+
+    afterEach(async () => {
+        expireCache();
+        jest.useRealTimers();
+    });
+
+    function expireCache() {
+        jest.advanceTimersByTime(ttl);
+        jest.runOnlyPendingTimers();
+    }
 
     it("should cache a customerDto", async () => {
         const id = UUID()
