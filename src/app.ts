@@ -10,7 +10,7 @@ const createApp = async (dataSource: DataSource = defaultDataSource) => {
     await initializeDataSource(dataSource);
 
     setupSwagger(app);
-    loadRoutes(app)
+    await loadRoutes(app, dataSource);
 
     app.use(express.json());
 

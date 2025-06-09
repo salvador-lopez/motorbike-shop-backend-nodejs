@@ -5,6 +5,7 @@ import {TypeOrmCustomer} from "../database/typeorm/data-model";
 import {TypeOrmCustomerRepository} from "../database/typeorm/customer-repository";
 import {CustomerController} from "../controllers/rest/customer";
 import {InMemoryCustomerCache} from "../services/cache";
+import {DataSource} from "typeorm";
 
 const createRouter = (customerController: CustomerController): Router => {
     const router = Router();
@@ -220,15 +221,17 @@ const createRouter = (customerController: CustomerController): Router => {
     return router;
 };
 
-const memory = new Map<string, CustomerDTO>();
-const inMemoryCustomerCacheInstance = new InMemoryCustomerCache(memory);
+export const memory = new Map<string, CustomerDTO>();
 
-const customerServiceInstance = new CustomerService(
-    new TypeOrmCustomerRepository(getDataSource().getRepository(TypeOrmCustomer)),
-    inMemoryCustomerCacheInstance
-);
-const customerControllerInstance = new CustomerController(customerServiceInstance);
+export default function customerRouter(dataSource:DataSource){
+    const inMemoryCustomerCacheInstance = new InMemoryCustomerCache(memory);
 
-const customerRouter = createRouter(customerControllerInstance);
+    const customerServiceInstance = new CustomerService(
+        new TypeOrmCustomerRepository(dataSource.getRepository(TypeOrmCustomer)),
+        inMemoryCustomerCacheInstance
+    );
+    const customerControllerInstance = new CustomerController(customerServiceInstance);
 
-export default customerRouter;
+  return createRouter(customerControllerInstance);
+
+}
