@@ -1,15 +1,17 @@
 import request from 'supertest';
-import {getDataSource, testDataSource} from "../database/typeorm/data-source";
+import {testDataSource} from "../database/typeorm/data-source";
 import {TypeOrmCustomer} from "../database/typeorm/data-model";
 import {Express} from "express";
 import createApp from "../app";
 import {v4 as UUID} from "uuid";
 import {BillingAddressDTO} from "../services/customer";
+import {memory} from "./customer";
 
 let app: Express;
 
-beforeEach(async () => {
-    await getDataSource().getRepository(TypeOrmCustomer).clear();
+afterEach(async () => {
+    await testDataSource.getRepository(TypeOrmCustomer).clear();
+    memory.clear()
 });
 
 beforeAll(async () => {
@@ -194,6 +196,7 @@ describe('DELETE /api/customers/:id', () => {
 });
 
 describe('PATCH /api/customers/:id/add-credit', () => {
+
     it('should respond with 200 ok', async () => {
         const id = UUID();
         const credit = 10.5;

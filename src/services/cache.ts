@@ -27,6 +27,6 @@ export class InMemoryCustomerCache implements CustomerCache {
 
         setTimeout(() => {
             this.memory.delete(customerDto.id);
-        }, ttl);
+        }, ttl * 1000);
     }
 }
