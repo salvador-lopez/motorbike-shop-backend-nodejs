@@ -24,23 +24,3 @@ export function loadRoutes(app: Express,dataSource:DataSource) {
         }
     });
 }
-
-// export async function loadRoutes(app: Express,dataSource:DataSource) {
-//     const routesPath = join(__dirname);
-//     const filterResult = readdirSync(routesPath)
-//         .filter(file=>  file !== "index.ts" && file.endsWith(".ts") && !file.endsWith(".test.ts"));
-//
-//
-//     const result  = filterResult.map(async(file)=> {
-//             const route = await import(`./${file}`);
-//         if (typeof route.default === 'function') {
-//             console.log(typeof dataSource)
-//             // console.log(route.default)
-//             app.use("/api", route.default(dataSource));
-//         } else {
-//             app.use("/api", route.default);
-//         }
-//
-//     });
-//     await Promise.all(result);
-// }

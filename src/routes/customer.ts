@@ -1,5 +1,4 @@
 import {Router} from "express";
-import {getDataSource} from "../database/typeorm/data-source";
 import {CustomerDTO, CustomerService} from "../services/customer";
 import {TypeOrmCustomer} from "../database/typeorm/data-model";
 import {TypeOrmCustomerRepository} from "../database/typeorm/customer-repository";

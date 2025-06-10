@@ -1,5 +1,5 @@
 import request from 'supertest';
-import {getDataSource, initializeDataSource, testDataSource} from "../database/typeorm/data-source";
+import {testDataSource} from "../database/typeorm/data-source";
 import {TypeOrmCustomer} from "../database/typeorm/data-model";
 import {Express} from "express";
 import createApp from "../app";
@@ -9,8 +9,8 @@ import {memory} from "./customer";
 
 let app: Express;
 
-beforeEach(async () => {
-    await getDataSource().getRepository(TypeOrmCustomer).clear();
+afterEach(async () => {
+    await testDataSource.getRepository(TypeOrmCustomer).clear();
     memory.clear()
 });
 
