@@ -5,8 +5,9 @@ import { v4 as UUID} from 'uuid';
 
 let redisClient: RedisClientType;
 let redisCustomer: RedisCustomerCache;
+let prefixKey: string = 'customers:'
 
-beforeEach(async () => {
+afterEach(async () => {
    await redisClient.flushAll();
 });
 
@@ -16,7 +17,7 @@ redisClient =  createClient({
 })
 
     await redisClient.connect();
-    redisCustomer = new RedisCustomerCache(redisClient);
+    redisCustomer = new RedisCustomerCache(redisClient, prefixKey);
 });
 
 afterAll(async () => {
@@ -29,10 +30,20 @@ describe("Customer Redis Integration Test", () => {
     it('get by id',async()=> {
         const customerDTO = new CustomerDTO(UUID(),'email@example.com',0);
 
-        await redisClient.set(customerDTO.id,JSON.stringify(customerDTO));
+        await redisClient.set(`${prefixKey}${customerDTO.id}`,JSON.stringify(customerDTO));
 
         expect(await redisCustomer.get(customerDTO.id)).toEqual(
             customerDTO
+        )
+    })
+
+    it('Should cache customer dto', async()=> {
+        const customerDTO = new CustomerDTO(UUID(),'email@example.com',0);
+
+        await redisCustomer.set(customerDTO, 10);
+
+        expect(await redisClient.get(`${prefixKey}${customerDTO.id}`)).toEqual(
+            JSON.stringify(customerDTO)
         )
     })
 
