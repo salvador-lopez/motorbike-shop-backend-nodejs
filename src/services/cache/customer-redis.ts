@@ -19,9 +19,29 @@ export class RedisCustomerCache implements CustomerCache {
         return JSON.parse(customer) as CustomerDTO;
     }
 
-    getAll(): Promise<CustomerDTO[]> {
-        throw new Error("Method not implemented.");
+    async getAll(): Promise<CustomerDTO[]> {
+        let cursor = 0;
+        const keys: string[] = [];
+        do {
+            const result = await this.redisClient.scan(cursor, {
+                MATCH: `${this.prefix}*`,
+                COUNT: 100
+            });
+            cursor = result.cursor;
+            keys.push(...result.keys);
+        } while (cursor !== 0);
 
+        if (keys.length === 0) {
+            return [];
+        }
+
+        const values = await this.redisClient.mGet(keys);
+        return values.reduce<CustomerDTO[]>((acc, value) => {
+            if (value !== null) {
+                acc.push(JSON.parse(value) as CustomerDTO);
+            }
+            return acc;
+        },[])
     }
 
     /**
@@ -36,4 +56,3 @@ export class RedisCustomerCache implements CustomerCache {
 
 
 }
-

@@ -47,4 +47,20 @@ describe("Customer Redis Integration Test", () => {
         )
     })
 
+
+    it('Should get all customers dto', async()=> {
+        const customerDTO1 = new CustomerDTO(UUID(),'email1@example.com',1);
+        const customerDTO2 = new CustomerDTO(UUID(),'email2@example.com',2);
+        const customerDTO3 = new CustomerDTO(UUID(),'email3@example.com',3);
+
+        await redisClient.set(`${prefixKey}${customerDTO1.id}`,JSON.stringify(customerDTO1));
+        await redisClient.set(`${prefixKey}${customerDTO3.id}`,JSON.stringify(customerDTO3));
+        await redisClient.set(`${prefixKey}${customerDTO2.id}`,JSON.stringify(customerDTO2));
+
+        const result = await redisCustomer.getAll();
+        expect(result.sort((a,b) => a.availableCredit - b.availableCredit)).toEqual(
+            [customerDTO1, customerDTO2, customerDTO3].sort((a,b) => a.availableCredit + b.availableCredit)
+        )
+    })
+
 })
