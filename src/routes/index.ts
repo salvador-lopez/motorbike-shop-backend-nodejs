@@ -1,13 +1,9 @@
 import { Express } from "express";
-import { readdirSync } from "fs";
-import { join } from "path";
+import {DataSource} from "typeorm";
+import healthzRouter from "./healthz";
+import customerRouter from "./customer";
 
-export function loadRoutes(app: Express) {
-    const routesPath = join(__dirname);
-    readdirSync(routesPath).forEach(async (file) => {
-        if (file !== "index.ts" && file.endsWith(".ts") && !file.endsWith(".test.ts")) {
-            const route = await import(`./${file}`);
-            app.use("/api", route.default);
-        }
-    });
+export function loadRoutes(app: Express,dataSource:DataSource) {
+    app.use("/api", healthzRouter);
+    app.use("/api", customerRouter(dataSource));
 }
