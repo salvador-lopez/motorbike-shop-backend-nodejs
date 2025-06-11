@@ -1,5 +1,5 @@
-import {CustomerCache} from "../../services/cache";
-import {CustomerDTO} from "../../services/customer";
+import {CustomerCache} from "./customer-cache";
+import {CustomerDTO} from "../customer";
 import {RedisClientType} from 'redis'
 
 export class RedisCustomerCache implements CustomerCache {

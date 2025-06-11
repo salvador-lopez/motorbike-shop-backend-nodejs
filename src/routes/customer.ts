@@ -3,7 +3,7 @@ import {CustomerDTO, CustomerService} from "../services/customer";
 import {TypeOrmCustomer} from "../database/typeorm/data-model";
 import {TypeOrmCustomerRepository} from "../database/typeorm/customer-repository";
 import {CustomerController} from "../controllers/rest/customer";
-import {InMemoryCustomerCache} from "../services/cache";
+import {InMemoryCustomerCache} from "../services/cache/customer-in-memory"
 import {DataSource} from "typeorm";
 
 const createRouter = (customerController: CustomerController): Router => {

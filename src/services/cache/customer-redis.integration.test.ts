@@ -1,6 +1,6 @@
 import {createClient, RedisClientType} from 'redis'
 import {RedisCustomerCache} from "./customer-redis";
-import {CustomerDTO} from "../../services/customer";
+import {CustomerDTO} from "../customer";
 import { v4 as UUID} from 'uuid';
 
 let redisClient: RedisClientType;

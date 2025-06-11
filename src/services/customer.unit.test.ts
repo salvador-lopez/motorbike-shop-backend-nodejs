@@ -10,7 +10,7 @@ import {
     EntityWithSameIdAlreadyExistError
 } from "../domain/errors";
 import {EntityId, Email, Credit} from "../domain/common";
-import { CustomerCache } from "./cache";
+import { CustomerCache } from "./cache/customer-cache";
 
 describe('CustomerService', () => {
     const mockRepository = mock<CustomerRepository>();
