@@ -1,11 +1,5 @@
-
-import {CustomerDTO} from "./customer";
-
-export interface CustomerCache {
-    set:(customer:CustomerDTO, ttl: number)=> Promise<void>;
-    get:(id:string)=> Promise<CustomerDTO | null>;
-    getAll:()=> Promise<CustomerDTO[]>;
-}
+import {CustomerDTO} from "../../customer";
+import {CustomerCache} from "../customer-cache";
 
 export class InMemoryCustomerCache implements CustomerCache {
     private memory: Map<string, CustomerDTO>;

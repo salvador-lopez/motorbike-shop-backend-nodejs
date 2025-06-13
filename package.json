@@ -27,6 +27,7 @@
   "homepage": "https://github.com/salvador-lopez/motorbike-shop-backend-nodejs#readme",
   "dependencies": {
     "express": "^4.21.2",
+    "redis": "^4.7.1",
     "reflect-metadata": "^0.2.2",
     "sqlite3": "^5.1.7",
     "swagger-jsdoc": "^6.2.8",

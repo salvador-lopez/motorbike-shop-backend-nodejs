@@ -5,7 +5,7 @@ import {
     EntityWithSameEmailAlreadyExistError,
     EntityWithSameIdAlreadyExistError
 } from "../domain/errors";
-import {CustomerCache} from "./cache";
+import {CustomerCache} from "./cache/customer-cache";
 
 export class CustomerService {
     private repository: CustomerRepository;
