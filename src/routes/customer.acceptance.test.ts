@@ -6,16 +6,31 @@ import createApp from "../app";
 import {v4 as UUID} from "uuid";
 import {BillingAddressDTO} from "../services/customer";
 import {memory} from "./customer";
+import {createClient} from 'redis'
+import {InMemoryCustomerCacheClearer} from "../../testutils/cache/inMemory/customer-cache-clearer";
+import {RedisCustomerCacheClearer} from "../../testutils/cache/redis/customer-cache-clearer";
+import {CustomerCacheClearerFactory} from "../../testutils/cache/customer-cache-clearer-factory";
 
 let app: Express;
 
+let cacheClearer: CustomerCacheClearer
+
 afterEach(async () => {
     await testDataSource.getRepository(TypeOrmCustomer).clear();
-    memory.clear()
+    await cacheClearer.clear();
 });
 
 beforeAll(async () => {
     app = await createApp(testDataSource);
+
+    const cacheClearerFactory = new CustomerCacheClearerFactory(
+        new InMemoryCustomerCacheClearer(memory),
+        new RedisCustomerCacheClearer(createClient({
+            url:'redis://localhost:6379'
+        }))
+    );
+    const cacheImpl = process.env.CACHE_IMPL || 'inMemory';
+    cacheClearer = cacheClearerFactory.create(cacheImpl);
 });
 
 afterAll(async () => {
