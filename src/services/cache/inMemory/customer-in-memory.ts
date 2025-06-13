@@ -1,5 +1,5 @@
-import {CustomerDTO} from "../customer";
-import {CustomerCache} from "./customer-cache";
+import {CustomerDTO} from "../../customer";
+import {CustomerCache} from "../customer-cache";
 
 export class InMemoryCustomerCache implements CustomerCache {
     private memory: Map<string, CustomerDTO>;
