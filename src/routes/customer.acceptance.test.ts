@@ -2,14 +2,16 @@ import request from 'supertest';
 import {testDataSource} from "../database/typeorm/data-source";
 import {TypeOrmCustomer} from "../database/typeorm/data-model";
 import {Express} from "express";
-import createApp from "../app";
+import createApp, {AppCache} from "../app";
 import {v4 as UUID} from "uuid";
-import {BillingAddressDTO} from "../services/customer";
-import {memory} from "./customer";
-import {createClient} from 'redis'
+import {BillingAddressDTO, CustomerDTO} from "../services/customer";
 import {InMemoryCustomerCacheClearer} from "../../testutils/cache/inMemory/customer-cache-clearer";
 import {RedisCustomerCacheClearer} from "../../testutils/cache/redis/customer-cache-clearer";
 import {CustomerCacheClearerFactory} from "../../testutils/cache/customer-cache-clearer-factory";
+import {CustomerCacheClearer} from "../../testutils/cache/customer-cache-clearer";
+import {createClient, RedisClientType} from "redis";
+import {InMemoryCustomerCache} from "../services/cache/inMemory/customer-in-memory";
+import {RedisCustomerCache} from "../services/cache/redis/customer-redis";
 
 let app: Express;
 
@@ -21,20 +23,33 @@ afterEach(async () => {
 });
 
 beforeAll(async () => {
-    app = await createApp(testDataSource);
+    const cacheImpl = process.env.CACHE_IMPL || 'inMemory';
+    const redisClient:RedisClientType = createClient({
+        url:'redis://localhost:6379',
+    })
+
+    const inMemory = new Map<string, CustomerDTO>();
+
+    if( cacheImpl === 'redis' ){
+        await redisClient.connect()
+    }
+
+    const cache:AppCache = {
+        customerCache: cacheImpl === 'redis' ? new RedisCustomerCache(redisClient) : new InMemoryCustomerCache(inMemory)
+    }
+
+    app = await createApp(testDataSource,cache);
 
     const cacheClearerFactory = new CustomerCacheClearerFactory(
-        new InMemoryCustomerCacheClearer(memory),
-        new RedisCustomerCacheClearer(createClient({
-            url:'redis://localhost:6379'
-        }))
+        new InMemoryCustomerCacheClearer(inMemory),
+        new RedisCustomerCacheClearer(redisClient)
     );
-    const cacheImpl = process.env.CACHE_IMPL || 'inMemory';
     cacheClearer = cacheClearerFactory.create(cacheImpl);
 });
 
 afterAll(async () => {
     await testDataSource.destroy();
+    await cacheClearer.disconnect();
 });
 
 const customersApiPath = '/api/customers';

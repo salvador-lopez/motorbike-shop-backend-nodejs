@@ -1,10 +1,11 @@
 import {Router} from "express";
-import {CustomerDTO, CustomerService} from "../services/customer";
+import { CustomerService} from "../services/customer";
 import {TypeOrmCustomer} from "../database/typeorm/data-model";
 import {TypeOrmCustomerRepository} from "../database/typeorm/customer-repository";
 import {CustomerController} from "../controllers/rest/customer";
-import {InMemoryCustomerCache} from "../services/cache/customer-in-memory"
 import {DataSource} from "typeorm";
+import {CustomerCache} from "../services/cache/customer-cache";
+
 
 const createRouter = (customerController: CustomerController): Router => {
     const router = Router();
@@ -219,15 +220,19 @@ const createRouter = (customerController: CustomerController): Router => {
 
     return router;
 };
+ function getCacheInstance(): 'Redis' | 'Memory' {
+    const cacheArg = process.argv.find(arg => arg.startsWith('--cacheInstance='));
+    if (cacheArg) {
+        const [_, value] = cacheArg.split('=');
+        return value as 'Redis' | 'Memory';
+    }
+    return 'Memory';
+}
 
-export const memory = new Map<string, CustomerDTO>();
-
-export default function customerRouter(dataSource:DataSource){
-    const inMemoryCustomerCacheInstance = new InMemoryCustomerCache(memory);
-
+export default function customerRouter(dataSource:DataSource, cache: CustomerCache){
     const customerServiceInstance = new CustomerService(
         new TypeOrmCustomerRepository(dataSource.getRepository(TypeOrmCustomer)),
-        inMemoryCustomerCacheInstance
+        cache,
     );
     const customerControllerInstance = new CustomerController(customerServiceInstance);
 

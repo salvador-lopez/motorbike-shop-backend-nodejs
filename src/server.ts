@@ -1,6 +1,8 @@
 import "reflect-metadata";
-import createApp from './app';
+import createApp, {AppCache} from './app';
 import { defaultDataSource } from './database/typeorm/data-source';
+import {createClient, RedisClientType} from "redis";
+import {RedisCustomerCache} from "./services/cache/redis/customer-redis";
 
 const port: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
@@ -8,7 +10,21 @@ let server: http.Server;
 
 const startServer = async () => {
     try {
-        const app = await createApp(defaultDataSource);
+    const cacheImplementation = process.env.CACHE_IMPL
+
+    let cache: undefined | AppCache;
+        const redisClient: RedisClientType = createClient({
+            url:'redis://localhost:6379',
+        })
+
+        if(cacheImplementation === 'redis'){
+            await redisClient.connect()
+            cache = {
+                customerCache: new RedisCustomerCache(redisClient)
+            }
+        }
+
+        const app = await createApp(defaultDataSource,cache);
 
         app.listen(port, () => {
             console.log(`Example app listening on port ${port}`);
