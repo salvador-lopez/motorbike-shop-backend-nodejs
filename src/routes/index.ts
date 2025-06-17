@@ -3,9 +3,8 @@ import {DataSource} from "typeorm";
 import healthzRouter from "./healthz";
 import customerRouter from "./customer";
 import {CustomerCache} from "../services/cache/customer-cache";
-import {AppCache} from "../app";
 
-export function loadRoutes(app: Express,dataSource:DataSource,cache: AppCache) {
+export function loadRoutes(app: Express,dataSource:DataSource,customerCache: CustomerCache) {
     app.use("/api", healthzRouter);
-    app.use("/api", customerRouter(dataSource,cache.customerCache));
+    app.use("/api", customerRouter(dataSource,customerCache));
 }

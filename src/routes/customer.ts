@@ -220,10 +220,10 @@ const createRouter = (customerController: CustomerController): Router => {
     return router;
 };
 
-export default function customerRouter(dataSource:DataSource, cache: CustomerCache){
+export default function customerRouter(dataSource:DataSource, customerCache: CustomerCache){
     const customerServiceInstance = new CustomerService(
         new TypeOrmCustomerRepository(dataSource.getRepository(TypeOrmCustomer)),
-        cache,
+        customerCache,
     );
     const customerControllerInstance = new CustomerController(customerServiceInstance);
 

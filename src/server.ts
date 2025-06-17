@@ -1,30 +1,30 @@
 import "reflect-metadata";
-import createApp, {AppCache} from './app';
+import createApp from './app';
 import { defaultDataSource } from './database/typeorm/data-source';
 import {createClient, RedisClientType} from "redis";
 import {RedisCustomerCache} from "./services/cache/redis/customer-redis";
+import {CustomerCache} from "./services/cache/customer-cache";
 
 const port: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 let server: http.Server;
+let redisClient: RedisClientType | undefined;
 
 const startServer = async () => {
     try {
-    const cacheImplementation = process.env.CACHE_IMPL
+        const cacheImplementation = process.env.CACHE_IMPL
 
-    let cache: undefined | AppCache;
-        const redisClient: RedisClientType = createClient({
-            url:'redis://localhost:6379',
-        })
-
+        let customerCache: undefined | CustomerCache;
         if(cacheImplementation === 'redis'){
-            await redisClient.connect()
-            cache = {
-                customerCache: new RedisCustomerCache(redisClient)
-            }
+            redisClient = createClient({
+                url:'redis://localhost:6379',
+            })
+
+            await redisClient.connect();
+            customerCache = new RedisCustomerCache(redisClient);
         }
 
-        const app = await createApp(defaultDataSource,cache);
+        const app = await createApp(defaultDataSource, customerCache);
 
         app.listen(port, () => {
             console.log(`Example app listening on port ${port}`);
@@ -67,6 +67,14 @@ const gracefulShutdown = async (signal: string) => {
                 }
             } else {
                 console.log('ℹ️ Database connection was not initialized, skipping close.');
+            }
+
+            if (redisClient !== undefined) {
+                console.log('⏳ Closing redis client connection...');
+                await redisClient.quit();
+                console.log('✅ Redis client connection closed.');
+            } else {
+                console.log('ℹ️ Redis client connection was not initialized, skipping close.');
             }
 
             // 3. Exit process

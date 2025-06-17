@@ -7,12 +7,9 @@ import {CustomerDTO} from "./services/customer";
 import {CustomerCache} from "./services/cache/customer-cache";
 import {InMemoryCustomerCache} from "./services/cache/inMemory/customer-in-memory";
 
-export interface AppCache {
-    customerCache:CustomerCache;
-}
 const memory = new Map<string, CustomerDTO>();
 
-const createApp = async (dataSource: DataSource = defaultDataSource, cache: AppCache = {customerCache:new InMemoryCustomerCache(memory)}) => {
+const createApp = async (customerService: DataSource = defaultDataSource, customerCache: CustomerCache = new InMemoryCustomerCache(memory)) => {
     const app = express();
 
     await dataSource.initialize();
@@ -20,7 +17,7 @@ const createApp = async (dataSource: DataSource = defaultDataSource, cache: AppC
     setupSwagger(app);
     app.use(express.json());
 
-    loadRoutes(app, dataSource, cache);
+    loadRoutes(app, dataSource, customerCache);
 
     return app;
 }
