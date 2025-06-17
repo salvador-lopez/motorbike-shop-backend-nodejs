@@ -9,6 +9,10 @@ export class InMemoryCustomerCacheClearer implements CustomerCacheClearer {
     }
 
     async clear(): Promise<void> {
-        throw new Error('Method not implemented.');
+        this.memory.clear();
+    }
+
+  async disconnect(): Promise<void> {
+       this.memory.clear();
     }
 }

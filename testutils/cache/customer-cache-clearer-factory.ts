@@ -1,5 +1,6 @@
 import {RedisCustomerCacheClearer} from "./redis/customer-cache-clearer";
 import {InMemoryCustomerCacheClearer} from "./inMemory/customer-cache-clearer";
+import {CustomerCacheClearer} from "./customer-cache-clearer";
 
 export class CustomerCacheClearerFactory {
     private readonly inMemoryImpl: InMemoryCustomerCacheClearer;
@@ -9,7 +10,7 @@ export class CustomerCacheClearerFactory {
         this.redisImpl = redisImpl;
     }
 
-    create(cacheImpl: string): CacheClearer {
+    create(cacheImpl: string): CustomerCacheClearer {
         switch (cacheImpl) {
             case 'redis':
                 return this.redisImpl;
