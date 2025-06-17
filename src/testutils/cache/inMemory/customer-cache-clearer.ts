@@ -1,5 +1,5 @@
 import {CustomerCacheClearer} from "../customer-cache-clearer";
-import {CustomerDTO} from "../../../src/services/customer";
+import {CustomerDTO} from "../../../services/customer";
 
 export class InMemoryCustomerCacheClearer implements CustomerCacheClearer {
     private memory: Map<string, CustomerDTO>;
@@ -12,7 +12,7 @@ export class InMemoryCustomerCacheClearer implements CustomerCacheClearer {
         this.memory.clear();
     }
 
-  async disconnect(): Promise<void> {
-       this.memory.clear();
+    async disconnect(): Promise<void> {
+       return;
     }
 }
