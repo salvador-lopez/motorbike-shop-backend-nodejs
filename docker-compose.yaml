@@ -5,8 +5,10 @@ services:
     volumes:
       - .:/app
     ports:
-    - "3000:3000"   # API port
-    - "9229:9229"   # Debugging port for Node.js
+      - "3000:3000"   # API port
+      - "9229:9229"   # Debugging port for Node.js
+    environment:
+      - REDIS_URL=redis://redis:6379
     command: tail -f /dev/null
     depends_on:
       - redis
