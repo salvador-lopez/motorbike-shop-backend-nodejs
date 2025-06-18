@@ -9,7 +9,7 @@ import {InMemoryCustomerCache} from "./services/cache/inMemory/customer-in-memor
 
 const memory = new Map<string, CustomerDTO>();
 
-const createApp = async (customerService: DataSource = defaultDataSource, customerCache: CustomerCache = new InMemoryCustomerCache(memory)) => {
+const createApp = async (dataSource: DataSource = defaultDataSource, customerCache: CustomerCache = new InMemoryCustomerCache(memory)) => {
     const app = express();
 
     await dataSource.initialize();
