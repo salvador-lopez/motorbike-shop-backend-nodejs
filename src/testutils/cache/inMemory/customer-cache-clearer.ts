@@ -13,6 +13,5 @@ export class InMemoryCustomerCacheClearer implements CustomerCacheClearer {
     }
 
     async disconnect(): Promise<void> {
-       return;
     }
 }

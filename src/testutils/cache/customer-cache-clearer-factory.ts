@@ -1,11 +1,9 @@
-import {RedisCustomerCacheClearer} from "./redis/customer-cache-clearer";
-import {InMemoryCustomerCacheClearer} from "./inMemory/customer-cache-clearer";
 import {CustomerCacheClearer} from "./customer-cache-clearer";
 
 export class CustomerCacheClearerFactory {
-    private readonly inMemoryImpl: InMemoryCustomerCacheClearer;
-    private readonly redisImpl: RedisCustomerCacheClearer;
-    constructor(inMemoryImpl: InMemoryCustomerCacheClearer, redisImpl: RedisCustomerCacheClearer) {
+    private readonly inMemoryImpl: CustomerCacheClearer;
+    private readonly redisImpl: CustomerCacheClearer;
+    constructor(inMemoryImpl: CustomerCacheClearer, redisImpl: CustomerCacheClearer) {
         this.inMemoryImpl = inMemoryImpl;
         this.redisImpl = redisImpl;
     }
