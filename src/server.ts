@@ -17,7 +17,7 @@ const startServer = async () => {
         let customerCache: undefined | CustomerCache;
         if(cacheImplementation === 'redis'){
             redisClient = createClient({
-                url:'redis://localhost:6379',
+                url: process.env.REDIS_URL || 'redis://localhost:6379',
             })
 
             await redisClient.connect();
@@ -26,7 +26,7 @@ const startServer = async () => {
 
         const app = await createApp(defaultDataSource, customerCache);
 
-        app.listen(port, () => {
+        server = app.listen(port, () => {
             console.log(`Example app listening on port ${port}`);
             console.log(`🔌 Database connection state: ${defaultDataSource.isInitialized ? 'Initialized' : 'Not Initialized'}`);
         });
