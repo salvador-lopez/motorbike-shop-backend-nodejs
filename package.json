@@ -11,10 +11,10 @@
     "test:integration:debug": "node --inspect-brk=0.0.0.0:9229 ./node_modules/.bin/jest --runInBand --testMatch='**/*.integration.test.ts'",
     "test:acceptance": "jest --testMatch='**/*.acceptance.test.ts'",
     "test:acceptance:debug": "node --inspect-brk=0.0.0.0:9229 ./node_modules/.bin/jest --runInBand --testMatch='**/*.acceptance.test.ts'",
-    "test:acceptance:redis": "cross-env CACHE_IMPL=redis jest --testMatch='**/*.acceptance.test.ts'",
     "build": "tsc",
     "start": "node dist/server.js",
-    "dev": "ts-node-dev --respawn --transpile-only src/server.ts"
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "dev:redis-cache": "cross-env CACHE_IMPL=redis ts-node-dev --respawn --transpile-only src/server.ts"
   },
   "repository": {
     "type": "git",
