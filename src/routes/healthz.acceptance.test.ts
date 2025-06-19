@@ -14,6 +14,7 @@ afterAll(async () => {
 });
 
 describe('GET /api/healthz', () => {
+    console.log(process.env.REDIS_URL)
     it('should respond with "ok"', async () => {
         const response = await request(app).get('/api/healthz');
         expect(response.status).toBe(200);
