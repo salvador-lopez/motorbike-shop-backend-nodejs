@@ -1,8 +1,13 @@
 
 git stash push --keep-index --include-untracked --quiet
 
-npm run test:unit
-npm run test:integration
-npm run test:acceptance
+test_exit_code=0
+npm run test:unit || test_exit_code=$?
+npm run test:integration || test_exit_code=$?
+npm run test:acceptance || test_exit_code=$?
 
-git stash pop --quiet
+git stash apply 0 --quiet
+
+git stash drop 0 --quiet
+
+exit $test_exit_code
