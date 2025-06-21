@@ -14,7 +14,8 @@
     "build": "tsc",
     "start": "node dist/server.js",
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
-    "dev:redis-cache": "cross-env CACHE_IMPL=redis ts-node-dev --respawn --transpile-only src/server.ts"
+    "dev:redis-cache": "cross-env CACHE_IMPL=redis ts-node-dev --respawn --transpile-only src/server.ts",
+    "prepare": "husky"
   },
   "repository": {
     "type": "git",
@@ -48,6 +49,7 @@
     "@types/uuid": "^10.0.0",
     "@types/validator": "^13.12.3",
     "cross-env": "^7.0.3",
+    "husky": "^9.1.7",
     "jest": "^29.7.0",
     "jest-mock-extended": "^4.0.0-beta1",
     "madge": "^8.0.0",
