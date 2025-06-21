@@ -1,3 +1,8 @@
+
+git stash push --keep-index --include-untracked --quiet
+
 npm run test:unit
 npm run test:integration
 npm run test:acceptance
+
+git stash pop --quiet
