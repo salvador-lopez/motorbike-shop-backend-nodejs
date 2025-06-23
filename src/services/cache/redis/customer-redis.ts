@@ -9,7 +9,8 @@ export class RedisCustomerCache implements CustomerCache {
     private redisClient: RedisClientType;
     protected readonly prefix
 
-    constructor(@inject(CUSTOMER_CACHE_INSTANCE_TOKEN) redisClient: RedisClientType, prefix: string = "customers:") {
+    constructor(@inject(CUSTOMER_CACHE_INSTANCE_TOKEN) redisClient: RedisClientType,
+                @inject('prefix', { isOptional: true }) prefix: string = 'customers:' ) {
         this.redisClient = redisClient;
         this.prefix = prefix;
     }
