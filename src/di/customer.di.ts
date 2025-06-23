@@ -1,12 +1,12 @@
-import {container, InjectionToken} from "tsyringe"
+import {container} from "tsyringe"
 import {TypeOrmCustomerRepository} from "../database/typeorm/customer-repository";
 import {RedisCustomerCache} from "../services/cache/redis/customer-redis";
 import {InMemoryCustomerCache} from "../services/cache/inMemory/customer-in-memory";
 import {CustomerDTO, CustomerService} from "../services/customer";
 import {createClient, RedisClientType} from "redis";
-import {defaultDataSource, getDefaultDataSource} from "../database/typeorm/data-source";
+import {getDefaultDataSource} from "../database/typeorm/data-source";
 import {TypeOrmCustomer} from "../database/typeorm/data-model";
-import {Repository} from "typeorm";
+import {DataSource, Repository} from "typeorm";
 import {CustomerController} from "../controllers/rest/customer";
 import {CustomerRepository} from "../domain/customer";
 import {CustomerCache} from "../services/cache/customer-cache";
@@ -14,12 +14,15 @@ import {
     CUSTOMER_CACHE_TOKEN,
     CUSTOMER_REPOSITORY_TOKEN,
     CUSTOMER_TYPEORM_REPOSITORY_TOKEN,
-    CUSTOMER_CACHE_INSTANCE_TOKEN
+    CUSTOMER_CACHE_INSTANCE_TOKEN,
+    DATABASE_TOKEN
 } from "./customer.tokens";
 
 
 export async function registerCustomerDI() {
     const dataSource = await getDefaultDataSource();
+
+    container.registerInstance<DataSource>(DATABASE_TOKEN, dataSource);
 
     const repositoryTypeORM: Repository<TypeOrmCustomer> = dataSource.getRepository(TypeOrmCustomer);
 
@@ -28,8 +31,8 @@ export async function registerCustomerDI() {
     );
     container.register<CustomerRepository>(CUSTOMER_REPOSITORY_TOKEN, {useClass: TypeOrmCustomerRepository});
 
-    if (process.env.REDIS_URL === 'redis') {
-        const redisClient: RedisClientType = createClient({ url: process.env.REDIS_URL });
+    if (process.env.CACHE_IMPL === 'redis') {
+        const redisClient: RedisClientType = createClient({ url: process.env.REDIS_URL || 'redis://localhost:6379' });
 
         await redisClient.connect();
 

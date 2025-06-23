@@ -6,7 +6,7 @@ import {testDataSource} from "../database/typeorm/data-source";
 let app: Express;
 
 beforeAll(async () => {
-    app = await createApp(testDataSource);
+    app = await createApp();
 });
 
 afterAll(async () => {
