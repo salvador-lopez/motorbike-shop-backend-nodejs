@@ -14,3 +14,12 @@ export const testDataSource = new DataSource({
     synchronize: true, // Auto-create tables for testing
     entities: [TypeOrmCustomer],
 });
+
+export async function getDefaultDataSource() {
+    if(process.env.NODE_ENV === 'test'){
+        await  testDataSource.initialize();
+        return testDataSource;
+    }
+    await defaultDataSource.initialize()
+    return defaultDataSource;
+}
