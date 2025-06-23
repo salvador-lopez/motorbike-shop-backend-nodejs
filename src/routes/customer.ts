@@ -1,13 +1,12 @@
 import {Router} from "express";
-import {CustomerService} from "../services/customer";
-import {TypeOrmCustomer} from "../database/typeorm/data-model";
-import {TypeOrmCustomerRepository} from "../database/typeorm/customer-repository";
 import {CustomerController} from "../controllers/rest/customer";
-import {DataSource} from "typeorm";
-import {CustomerCache} from "../services/cache/customer-cache";
+import {container} from "tsyringe";
 
-const createRouter = (customerController: CustomerController): Router => {
+const customerRouter =()=> {
+
     const router = Router();
+
+    const customerController = container.resolve(CustomerController);
 
     /**
      * @openapi
@@ -214,19 +213,10 @@ const createRouter = (customerController: CustomerController): Router => {
      *       500:
      *         description: Internal server error
      */
-
     router.patch('/customers/:id/add-credit', customerController.addCredit);
 
     return router;
-};
-
-export default function customerRouter(dataSource:DataSource, customerCache: CustomerCache){
-    const customerServiceInstance = new CustomerService(
-        new TypeOrmCustomerRepository(dataSource.getRepository(TypeOrmCustomer)),
-        customerCache,
-    );
-    const customerControllerInstance = new CustomerController(customerServiceInstance);
-
-  return createRouter(customerControllerInstance);
-
 }
+
+
+export  default customerRouter;

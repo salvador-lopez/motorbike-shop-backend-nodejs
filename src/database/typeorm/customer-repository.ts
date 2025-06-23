@@ -1,13 +1,16 @@
 import {Customer, CustomerRepository} from "../../domain/customer";
-import {Repository} from "typeorm/repository/Repository";
+import {Repository} from "typeorm";
 import {TypeOrmCustomer} from "./data-model";
 import {Credit, Email, EntityId} from "../../domain/common";
+import {inject, injectable} from "tsyringe";
+import {CUSTOMER_TYPEORM_REPOSITORY_TOKEN} from "../../di/customer.tokens";
 
 
+@injectable()
 export class TypeOrmCustomerRepository implements CustomerRepository {
     private typeOrmRepo: Repository<TypeOrmCustomer>;
 
-    constructor(typeOrmRepo: Repository<TypeOrmCustomer>) {
+    constructor(@inject(CUSTOMER_TYPEORM_REPOSITORY_TOKEN) typeOrmRepo: Repository<TypeOrmCustomer>) {
         this.typeOrmRepo = typeOrmRepo;
     }
 

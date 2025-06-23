@@ -1,12 +1,15 @@
 import {CustomerCache} from "../customer-cache";
 import {CustomerDTO} from "../../customer";
 import {RedisClientType} from 'redis'
+import {inject, injectable} from "tsyringe";
+import {CUSTOMER_CACHE_INSTANCE_TOKEN} from "../../../di/customer.tokens";
 
+@injectable()
 export class RedisCustomerCache implements CustomerCache {
     private redisClient: RedisClientType;
     protected readonly prefix
 
-    constructor(redisClient: RedisClientType, prefix: string = "customers:") {
+    constructor(@inject(CUSTOMER_CACHE_INSTANCE_TOKEN) redisClient: RedisClientType, prefix: string = "customers:") {
         this.redisClient = redisClient;
         this.prefix = prefix;
     }

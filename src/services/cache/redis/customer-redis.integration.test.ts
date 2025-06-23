@@ -1,3 +1,4 @@
+import "reflect-metadata"
 import {createClient, RedisClientType} from 'redis'
 import {RedisCustomerCache} from "./customer-redis";
 import {CustomerDTO} from "../../customer";

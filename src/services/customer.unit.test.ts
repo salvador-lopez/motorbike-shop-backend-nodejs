@@ -1,3 +1,4 @@
+import "reflect-metadata"
 import {CustomerDTO, CustomerService} from './customer';
 import {BillingAddress, Customer, CustomerRepository} from '../domain/customer';
 import {BillingAddressDTO} from './customer';

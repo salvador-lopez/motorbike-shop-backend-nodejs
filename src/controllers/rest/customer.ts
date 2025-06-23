@@ -1,12 +1,14 @@
 import {BillingAddressDTO, CustomerDTO, CustomerService} from "../../services/customer";
 import {Request, Response} from "express";
 import {DomainConflictError, EntityNotFoundError} from "../../domain/errors";
-import {KeyObject} from "node:crypto";
+import { inject, injectable} from "tsyringe";
 
+@injectable()
 export class CustomerController {
     private customerService: CustomerService;
 
-    constructor(customerService: CustomerService) {
+    constructor(@inject(CustomerService)
+                customerService: CustomerService) {
         this.customerService = customerService;
     }
 

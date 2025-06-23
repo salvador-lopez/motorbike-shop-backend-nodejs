@@ -6,13 +6,16 @@ import {
     EntityWithSameIdAlreadyExistError
 } from "../domain/errors";
 import {CustomerCache} from "./cache/customer-cache";
+import {inject, injectable} from "tsyringe";
+import {CUSTOMER_CACHE_TOKEN, CUSTOMER_REPOSITORY_TOKEN} from "../di/customer.tokens";
 
+@injectable()
 export class CustomerService {
     private repository: CustomerRepository;
     private cache: CustomerCache;
 
-    constructor(customerRepository: CustomerRepository,
-                customerCache: CustomerCache,) {
+    constructor(@inject(CUSTOMER_REPOSITORY_TOKEN) customerRepository: CustomerRepository,
+                @inject(CUSTOMER_CACHE_TOKEN) customerCache: CustomerCache) {
         this.repository = customerRepository;
         this.cache = customerCache;
     }

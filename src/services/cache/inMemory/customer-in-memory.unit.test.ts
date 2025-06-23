@@ -1,3 +1,4 @@
+import "reflect-metadata"
 import {v4 as UUID} from "uuid";
 import {CustomerDTO} from "../../customer";
 import {InMemoryCustomerCache} from "./customer-in-memory";

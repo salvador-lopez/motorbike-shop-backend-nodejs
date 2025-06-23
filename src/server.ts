@@ -1,30 +1,13 @@
-import "reflect-metadata";
 import createApp from './app';
 import { defaultDataSource } from './database/typeorm/data-source';
-import {createClient, RedisClientType} from "redis";
-import {RedisCustomerCache} from "./services/cache/redis/customer-redis";
-import {CustomerCache} from "./services/cache/customer-cache";
 
 const port: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 let server: http.Server;
-let redisClient: RedisClientType | undefined;
 
 const startServer = async () => {
     try {
-        const cacheImplementation = process.env.CACHE_IMPL
-
-        let customerCache: undefined | CustomerCache;
-        if(cacheImplementation === 'redis'){
-            redisClient = createClient({
-                url: process.env.REDIS_URL || 'redis://localhost:6379',
-            })
-
-            await redisClient.connect();
-            customerCache = new RedisCustomerCache(redisClient);
-        }
-
-        const app = await createApp(defaultDataSource, customerCache);
+        const app = await createApp();
 
         server = app.listen(port, () => {
             console.log(`Example app listening on port ${port}`);
@@ -37,7 +20,6 @@ const startServer = async () => {
         }
         process.exit(1);
     }
-
 };
 
 const gracefulShutdown = async (signal: string) => {
@@ -110,5 +92,4 @@ process.on('SIGINT', () => gracefulShutdown('SIGINT'));
 
 // Listen for termination signal (e.g., from Docker, Kubernetes, systemd)
 process.on('SIGTERM', () => gracefulShutdown('SIGTERM'));
-
 startServer();
