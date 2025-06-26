@@ -17,26 +17,29 @@ export const createAppContainer = async (dataSource: DataSource) => {
 
     await dataSource.initialize();
 
-    const cacheImpl = process.env.CACHE_IMPL ?? 'inMemory';
-
     const getCustomerRepositoryConn = (): Repository<TypeOrmCustomer> => {
         return dataSource.getRepository(TypeOrmCustomer);
     }
 
+    const cacheImpl = process.env.CACHE_IMPL ?? 'inMemory';
+    const customerCacheMemory = new Map<string, CustomerDTO>();
     let redisClient: RedisClientType;
+
     if (cacheImpl === 'redis') {
         redisClient = createClient({
             url: process.env.REDIS_URL || 'redis://localhost:6379',
         });
         await redisClient.connect();
         container.register({ redisClient: asValue(redisClient) });
+    } else {
+        container.register({ customerCacheMemory: asValue(customerCacheMemory) });
     }
 
     const makeCustomerCache = (): CustomerCache => {
         if (cacheImpl === 'redis') {
             return new RedisCustomerCache({redisClient: redisClient});
         } else {
-            return new InMemoryCustomerCache({memory: new Map<string, CustomerDTO>()});
+            return new InMemoryCustomerCache({customerCacheMemory: customerCacheMemory});
         }
     }
 
