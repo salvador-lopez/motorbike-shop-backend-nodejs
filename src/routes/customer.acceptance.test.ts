@@ -1,64 +1,37 @@
 import request from 'supertest';
-import {testDataSource} from "../database/typeorm/data-source";
 import {TypeOrmCustomer} from "../database/typeorm/data-model";
 import {Express} from "express";
 import createApp from "../app";
 import {v4 as UUID} from "uuid";
-import {BillingAddressDTO, CustomerDTO} from "../services/customer";
-import {InMemoryCustomerCacheClearer} from "../testutils/cache/inMemory/customer-cache-clearer";
-import {RedisCustomerCacheClearer} from "../testutils/cache/redis/customer-cache-clearer";
+import {BillingAddressDTO} from "../services/customer";
 import {CustomerCacheClearerFactory} from "../testutils/cache/customer-cache-clearer-factory";
-import {CustomerCacheClearer, NoOpCustomerCacheClearer} from "../testutils/cache/customer-cache-clearer";
-import {createClient, RedisClientType} from "redis";
-import {InMemoryCustomerCache} from "../services/cache/inMemory/customer-in-memory";
-import {RedisCustomerCache} from "../services/cache/redis/customer-redis";
-import {CustomerCache} from "../services/cache/customer-cache";
+import {CustomerCacheClearer} from "../testutils/cache/customer-cache-clearer";
+import {createAppTestContainer} from "../testutils/test-container";
+import {DataSource} from "typeorm";
 
 describe('customer api acceptance tests', () => {
     const customersApiPath = '/api/customers';
     let app: Express;
+    let dataSource: DataSource;
     let cacheClearer: CustomerCacheClearer
 
     afterEach(async () => {
-        await testDataSource.getRepository(TypeOrmCustomer).clear();
+        await dataSource.getRepository(TypeOrmCustomer).clear();
         await cacheClearer.clear();
     });
 
     beforeAll(async () => {
+        const container = await createAppTestContainer();
+        app = await createApp(container);
+        const cacheClearerFactory: CustomerCacheClearerFactory = container.resolve<CustomerCacheClearerFactory>('customerCacheClearerFactory');
+
         const cacheImpl = process.env.CACHE_IMPL || 'inMemory';
-
-        let customerCache: CustomerCache;
-        let inMemoryCustomerCacheClearer: CustomerCacheClearer;
-        let redisCustomerCacheClearer: CustomerCacheClearer;
-
-        if (cacheImpl === 'redis') {
-            const redisClient: RedisClientType = createClient({
-                url:process.env.REDIS_URL || 'redis://localhost:6379',
-            })
-            await redisClient.connect()
-            customerCache = new RedisCustomerCache(redisClient);
-
-            redisCustomerCacheClearer = new RedisCustomerCacheClearer(redisClient);
-            inMemoryCustomerCacheClearer = new NoOpCustomerCacheClearer()
-        } else {
-            let inMemory = new Map<string, CustomerDTO>();
-            customerCache = new InMemoryCustomerCache(inMemory);
-
-            inMemoryCustomerCacheClearer = new InMemoryCustomerCacheClearer(inMemory);
-            redisCustomerCacheClearer = new NoOpCustomerCacheClearer();
-        }
-
-        app = await createApp(testDataSource, customerCache);
-
-        const cacheClearerFactory = new CustomerCacheClearerFactory(
-            inMemoryCustomerCacheClearer,
-            redisCustomerCacheClearer
-        );
         cacheClearer = cacheClearerFactory.create(cacheImpl);
+        dataSource = container.resolve<DataSource>('dataSource');
     });
 
     afterAll(async () => {
-        await testDataSource.destroy();
+        await dataSource.destroy();
         await cacheClearer.disconnect();
     });
 
