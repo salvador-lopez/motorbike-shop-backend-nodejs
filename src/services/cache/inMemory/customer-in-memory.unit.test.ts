@@ -12,7 +12,7 @@ describe("InMemoryCustomerCache", () => {
     beforeEach(async () => {
         jest.useFakeTimers();
         memory = new Map<string, CustomerDTO>();
-        cacheService = new InMemoryCustomerCache({memory: memory});
+        cacheService = new InMemoryCustomerCache({customerCacheMemory: memory});
     });
 
     afterEach(async () => {

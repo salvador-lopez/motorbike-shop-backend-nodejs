@@ -4,8 +4,8 @@ import {CustomerDTO} from "../../../services/customer";
 export class InMemoryCustomerCacheClearer implements CustomerCacheClearer {
     private memory: Map<string, CustomerDTO>;
 
-    constructor(memory: Map<string, CustomerDTO>) {
-        this.memory = memory;
+    constructor({customerCacheMemory}: {customerCacheMemory: Map<string, CustomerDTO>}) {
+        this.memory = customerCacheMemory;
     }
 
     async clear(): Promise<void> {

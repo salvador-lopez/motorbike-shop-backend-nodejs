@@ -4,8 +4,8 @@ import {CustomerCache} from "../customer-cache";
 export class InMemoryCustomerCache implements CustomerCache {
     private memory: Map<string, CustomerDTO>;
 
-    constructor({memory}: {memory: Map<string, CustomerDTO>}) {
-        this.memory = memory;
+    constructor({customerCacheMemory}: {customerCacheMemory: Map<string, CustomerDTO>}) {
+        this.memory = customerCacheMemory;
     }
 
     async get(id: string): Promise<CustomerDTO | null> {
