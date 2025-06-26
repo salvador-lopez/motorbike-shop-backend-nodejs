@@ -11,8 +11,9 @@ export class CustomerService {
     private repository: CustomerRepository;
     private cache: CustomerCache;
 
-    constructor(customerRepository: CustomerRepository,
-                customerCache: CustomerCache,) {
+    constructor(
+        {customerRepository, customerCache}: {customerRepository: CustomerRepository, customerCache: CustomerCache}
+    ) {
         this.repository = customerRepository;
         this.cache = customerCache;
     }

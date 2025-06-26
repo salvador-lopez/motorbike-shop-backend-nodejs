@@ -5,12 +5,13 @@ import { v4 as UUID} from 'uuid';
 import {TypeOrmCustomerRepository} from "./customer-repository";
 import {TypeOrmCustomer} from "./data-model";
 import {QueryFailedError} from "typeorm";
+import {Repository} from "typeorm/repository/Repository";
 
 let customerRepo: TypeOrmCustomerRepository;
-const typeOrmRepo = testDataSource.getRepository(TypeOrmCustomer);
+const typeOrmRepo: Repository<TypeOrmCustomer> = testDataSource.getRepository(TypeOrmCustomer);
 
 beforeEach(async () => {
-    customerRepo = new TypeOrmCustomerRepository(typeOrmRepo);
+    customerRepo = new TypeOrmCustomerRepository({customerRepositoryConn: typeOrmRepo});
     await typeOrmRepo.clear();
 });
 

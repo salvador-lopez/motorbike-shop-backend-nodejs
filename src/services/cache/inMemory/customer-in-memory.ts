@@ -4,7 +4,7 @@ import {CustomerCache} from "../customer-cache";
 export class InMemoryCustomerCache implements CustomerCache {
     private memory: Map<string, CustomerDTO>;
 
-    constructor(memory: Map<string, CustomerDTO>) {
+    constructor({memory}: {memory: Map<string, CustomerDTO>}) {
         this.memory = memory;
     }
 
