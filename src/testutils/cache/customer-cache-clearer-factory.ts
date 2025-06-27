@@ -3,9 +3,17 @@ import {CustomerCacheClearer} from "./customer-cache-clearer";
 export class CustomerCacheClearerFactory {
     private readonly inMemoryImpl: CustomerCacheClearer;
     private readonly redisImpl: CustomerCacheClearer;
-    constructor(inMemoryImpl: CustomerCacheClearer, redisImpl: CustomerCacheClearer) {
-        this.inMemoryImpl = inMemoryImpl;
-        this.redisImpl = redisImpl;
+    constructor(
+        {
+            inMemoryCustomerCacheClearer,
+            redisCustomerCacheClearer
+        }: {
+            inMemoryCustomerCacheClearer: CustomerCacheClearer,
+            redisCustomerCacheClearer: CustomerCacheClearer
+        }
+    ) {
+        this.inMemoryImpl = inMemoryCustomerCacheClearer;
+        this.redisImpl = redisCustomerCacheClearer;
     }
 
     create(cacheImpl: string): CustomerCacheClearer {

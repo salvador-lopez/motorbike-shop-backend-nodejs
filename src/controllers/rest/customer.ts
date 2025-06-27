@@ -6,7 +6,7 @@ import {KeyObject} from "node:crypto";
 export class CustomerController {
     private customerService: CustomerService;
 
-    constructor(customerService: CustomerService) {
+    constructor({customerService}: {customerService: CustomerService}) {
         this.customerService = customerService;
     }
 

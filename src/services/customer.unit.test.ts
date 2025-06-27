@@ -15,7 +15,7 @@ import { CustomerCache } from "./cache/customer-cache";
 describe('CustomerService', () => {
     const mockRepository = mock<CustomerRepository>();
     const mockCache = mock<CustomerCache>();
-    const customerService = new CustomerService(mockRepository,mockCache)
+    const customerService = new CustomerService({customerRepository: mockRepository, customerCache: mockCache});
 
     beforeEach(() => {
         mockReset(mockRepository);

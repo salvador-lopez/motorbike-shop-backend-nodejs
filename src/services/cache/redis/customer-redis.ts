@@ -6,9 +6,9 @@ export class RedisCustomerCache implements CustomerCache {
     private redisClient: RedisClientType;
     protected readonly prefix
 
-    constructor(redisClient: RedisClientType, prefix: string = "customers:") {
+    constructor({redisClient, redisPrefix = "customers:"}: {redisClient: RedisClientType, redisPrefix?: string}) {
         this.redisClient = redisClient;
-        this.prefix = prefix;
+        this.prefix = redisPrefix;
     }
 
     async get(id: string): Promise<CustomerDTO | null> {

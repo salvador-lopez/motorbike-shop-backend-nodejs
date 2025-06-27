@@ -1,23 +1,24 @@
-import express from 'express';
+import express, {Express} from 'express';
 import {loadRoutes} from "./routes";
 import {setupSwagger} from "./swagger";
-import {defaultDataSource} from "./database/typeorm/data-source";
-import {DataSource} from "typeorm";
-import {CustomerDTO} from "./services/customer";
-import {CustomerCache} from "./services/cache/customer-cache";
-import {InMemoryCustomerCache} from "./services/cache/inMemory/customer-in-memory";
+import {scopePerRequest} from "awilix-express";
+import {createAppContainer} from "./container";
+import {AwilixContainer} from "awilix";
 
-const memory = new Map<string, CustomerDTO>();
+const attachContainer = async (app: Express) => {
+    const container: AwilixContainer = await createAppContainer();
+    app.container = container;
+    app.use(scopePerRequest(container));
+};
 
-const createApp = async (dataSource: DataSource = defaultDataSource, customerCache: CustomerCache = new InMemoryCustomerCache(memory)) => {
+const createApp = async () => {
     const app = express();
-
-    await dataSource.initialize();
+    await attachContainer(app);
 
     setupSwagger(app);
     app.use(express.json());
 
-    loadRoutes(app, dataSource, customerCache);
+    loadRoutes(app);
 
     return app;
 }

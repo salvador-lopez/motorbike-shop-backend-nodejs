@@ -1,31 +1,20 @@
 import "reflect-metadata";
 import createApp from './app';
 import { defaultDataSource } from './database/typeorm/data-source';
-import {createClient, RedisClientType} from "redis";
-import {RedisCustomerCache} from "./services/cache/redis/customer-redis";
-import {CustomerCache} from "./services/cache/customer-cache";
+import {RedisClientType} from "redis";
+import {AwilixContainer} from "awilix";
+import * as http from "node:http";
 
 const port: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 let server: http.Server;
-let redisClient: RedisClientType | undefined;
+let container: AwilixContainer;
 
 const startServer = async () => {
     try {
-        const cacheImplementation = process.env.CACHE_IMPL
-
-        let customerCache: undefined | CustomerCache;
-        if(cacheImplementation === 'redis'){
-            redisClient = createClient({
-                url: process.env.REDIS_URL || 'redis://localhost:6379',
-            })
-
-            await redisClient.connect();
-            customerCache = new RedisCustomerCache(redisClient);
-        }
-
-        const app = await createApp(defaultDataSource, customerCache);
-
+        const app = await createApp();
+        container = app.container;
+        
         server = app.listen(port, () => {
             console.log(`Example app listening on port ${port}`);
             console.log(`🔌 Database connection state: ${defaultDataSource.isInitialized ? 'Initialized' : 'Not Initialized'}`);
@@ -69,7 +58,8 @@ const gracefulShutdown = async (signal: string) => {
                 console.log('ℹ️ Database connection was not initialized, skipping close.');
             }
 
-            if (redisClient !== undefined) {
+            if (container.hasRegistration('redisClient')) {
+                const redisClient: RedisClientType = container.resolve<RedisClientType>('redisClient');
                 console.log('⏳ Closing redis client connection...');
                 await redisClient.quit();
                 console.log('✅ Redis client connection closed.');

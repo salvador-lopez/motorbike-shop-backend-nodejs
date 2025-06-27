@@ -3,12 +3,11 @@ import {Repository} from "typeorm/repository/Repository";
 import {TypeOrmCustomer} from "./data-model";
 import {Credit, Email, EntityId} from "../../domain/common";
 
-
 export class TypeOrmCustomerRepository implements CustomerRepository {
     private typeOrmRepo: Repository<TypeOrmCustomer>;
 
-    constructor(typeOrmRepo: Repository<TypeOrmCustomer>) {
-        this.typeOrmRepo = typeOrmRepo;
+    constructor({customerRepositoryConn}:{customerRepositoryConn: Repository<TypeOrmCustomer>}) {
+        this.typeOrmRepo = customerRepositoryConn;
     }
 
     async findById(id: EntityId): Promise<Customer | null> {

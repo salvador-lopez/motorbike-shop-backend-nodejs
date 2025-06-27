@@ -1,16 +1,10 @@
 import request from 'supertest';
 import createApp from '../app';
 import { Express } from "express";
-import {testDataSource} from "../database/typeorm/data-source";
 
 let app: Express;
-
 beforeAll(async () => {
-    app = await createApp(testDataSource);
-});
-
-afterAll(async () => {
-    await testDataSource.destroy();
+    app = await createApp();
 });
 
 describe('GET /api/healthz', () => {
