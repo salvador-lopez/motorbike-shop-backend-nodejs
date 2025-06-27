@@ -9,19 +9,51 @@ import { DataSource } from 'typeorm';
 import { TypeOrmCustomer } from './database/typeorm/data-model';
 import {Repository} from "typeorm/repository/Repository";
 import {TypeOrmCustomerRepository} from "./database/typeorm/customer-repository";
+import {defaultDataSource, testDataSource} from "./database/typeorm/data-source";
+import {NoOpCustomerCacheClearer} from "./testutils/cache/customer-cache-clearer";
+import {RedisCustomerCacheClearer} from "./testutils/cache/redis/customer-cache-clearer";
+import {InMemoryCustomerCacheClearer} from "./testutils/cache/inMemory/customer-cache-clearer";
+import {CustomerCacheClearerFactory} from "./testutils/cache/customer-cache-clearer-factory";
 
-export const createAppContainer = async (dataSource: DataSource) => {
+export const createAppContainer = async () => {
     const container = createContainer({
         injectionMode: InjectionMode.PROXY,
     });
+    
+    const env = process.env.NODE_ENV;
+    const cacheImpl = process.env.CACHE_IMPL ?? 'inMemory';
 
+    const registerTestServices = (): void => {
+        container.register({
+            customerCacheClearerFactory: asClass(CustomerCacheClearerFactory)
+        });
+        
+        if (cacheImpl === 'redis') {
+            container.register({
+                inMemoryCustomerCacheClearer: asClass(NoOpCustomerCacheClearer),
+                redisCustomerCacheClearer: asClass(RedisCustomerCacheClearer)
+            });
+            return;
+        }
+        
+        container.register({
+            inMemoryCustomerCacheClearer: asClass(InMemoryCustomerCacheClearer),
+            redisCustomerCacheClearer: asClass(NoOpCustomerCacheClearer)
+        });
+    }
+
+    let dataSource: DataSource = defaultDataSource;
+    if (env === 'test') {
+        dataSource = testDataSource;
+        registerTestServices();
+    }
+    
     await dataSource.initialize();
 
     const getCustomerRepositoryConn = (): Repository<TypeOrmCustomer> => {
         return dataSource.getRepository(TypeOrmCustomer);
     }
-
-    const cacheImpl = process.env.CACHE_IMPL ?? 'inMemory';
+    
     const customerCacheMemory = new Map<string, CustomerDTO>();
     let redisClient: RedisClientType;
 
