@@ -2,7 +2,6 @@ import "reflect-metadata";
 import createApp from './app';
 import { defaultDataSource } from './database/typeorm/data-source';
 import {RedisClientType} from "redis";
-import {createAppContainer} from "./container";
 import {AwilixContainer} from "awilix";
 import * as http from "node:http";
 
@@ -13,9 +12,9 @@ let container: AwilixContainer;
 
 const startServer = async () => {
     try {
-        container = await createAppContainer(defaultDataSource);
-        const app = await createApp(container);
-
+        const app = await createApp();
+        container = app.container;
+        
         server = app.listen(port, () => {
             console.log(`Example app listening on port ${port}`);
             console.log(`🔌 Database connection state: ${defaultDataSource.isInitialized ? 'Initialized' : 'Not Initialized'}`);

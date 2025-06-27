@@ -6,7 +6,6 @@ import {v4 as UUID} from "uuid";
 import {BillingAddressDTO} from "../services/customer";
 import {CustomerCacheClearerFactory} from "../testutils/cache/customer-cache-clearer-factory";
 import {CustomerCacheClearer} from "../testutils/cache/customer-cache-clearer";
-import {createAppTestContainer} from "../testutils/test-container";
 import {DataSource} from "typeorm";
 
 describe('customer api acceptance tests', () => {
@@ -21,8 +20,8 @@ describe('customer api acceptance tests', () => {
     });
 
     beforeAll(async () => {
-        const container = await createAppTestContainer();
-        app = await createApp(container);
+        app = await createApp();
+        const container = app.container;
         const cacheClearerFactory: CustomerCacheClearerFactory = container.resolve<CustomerCacheClearerFactory>('customerCacheClearerFactory');
 
         const cacheImpl = process.env.CACHE_IMPL || 'inMemory';
