@@ -7,6 +7,7 @@ import {BillingAddressDTO} from "../services/customer";
 import {CustomerCacheClearerFactory} from "../testutils/cache/customer-cache-clearer-factory";
 import {CustomerCacheClearer} from "../testutils/cache/customer-cache-clearer";
 import {DataSource} from "typeorm";
+import dotenv from "dotenv";
 
 describe('customer api acceptance tests', () => {
     const customersApiPath = '/api/customers';
@@ -20,6 +21,8 @@ describe('customer api acceptance tests', () => {
     });
 
     beforeAll(async () => {
+        dotenv.config({path:'.env'})
+
         app = await createApp();
         const container = app.container;
         const cacheClearerFactory: CustomerCacheClearerFactory = container.resolve<CustomerCacheClearerFactory>('customerCacheClearerFactory');
