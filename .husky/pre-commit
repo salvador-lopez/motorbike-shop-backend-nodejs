@@ -1,10 +1,15 @@
 
 git stash push --keep-index --include-untracked --quiet
 
+make backup-env
+
 test_exit_code=0
-npm run test:unit || test_exit_code=$?
-npm run test:integration || test_exit_code=$?
-npm run test:acceptance || test_exit_code=$?
+
+make run-unit || test_exit_code=$?
+make run-integration || test_exit_code=$?
+make run-acceptance || test_exit_code=$?
+
+make restore-env
 
 git stash apply 0 --quiet
 
