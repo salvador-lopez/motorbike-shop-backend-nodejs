@@ -2,6 +2,7 @@ import {createClient, RedisClientType} from 'redis'
 import {RedisCustomerCache} from "./customer-redis";
 import {CustomerDTO} from "../../customer";
 import {v4 as UUID} from 'uuid';
+import dotenv from "dotenv";
 
 describe("Customer Redis Integration Test", () => {
     const id = UUID();
@@ -22,6 +23,8 @@ describe("Customer Redis Integration Test", () => {
     });
 
     beforeAll(async () => {
+        dotenv.config({path:'.env'})
+
         redisClient = createClient({
             url: process.env.REDIS_URL || 'redis://localhost:6379'
         })

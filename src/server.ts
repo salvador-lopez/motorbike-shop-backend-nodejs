@@ -4,14 +4,16 @@ import { defaultDataSource } from './database/typeorm/data-source';
 import {RedisClientType} from "redis";
 import {AwilixContainer} from "awilix";
 import * as http from "node:http";
-
-const port: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+import dotenv from "dotenv";
 
 let server: http.Server;
 let container: AwilixContainer;
 
 const startServer = async () => {
     try {
+        dotenv.config({path:'.env'});
+        const port: number = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
+
         const app = await createApp();
         container = app.container;
         
