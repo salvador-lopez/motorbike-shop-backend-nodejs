@@ -11,6 +11,7 @@ Init the needed docker containers from you project root dir:
 
 ```bash
 docker compose up -d
+cp .env.example .env
 docker compose exec -it api sh
 npm install
 npm run dev
