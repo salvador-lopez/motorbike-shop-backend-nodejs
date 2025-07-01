@@ -8,12 +8,41 @@ import {CustomerCacheClearerFactory} from "../testutils/cache/customer-cache-cle
 import {CustomerCacheClearer} from "../testutils/cache/customer-cache-clearer";
 import {DataSource} from "typeorm";
 import dotenv from "dotenv";
+import {TypeOrmCustomerRepository} from "../database/typeorm/customer-repository";
+import {Customer, CustomerRepository} from "../domain/customer";
+import {Email,EntityId} from "../domain/common";
 
 describe('customer api acceptance tests', () => {
     const customersApiPath = '/api/customers';
     let app: Express;
     let dataSource: DataSource;
     let cacheClearer: CustomerCacheClearer
+    let customerRepository:CustomerRepository
+
+    // customers
+    const customerId1 = UUID();
+    const customerEmail1 ='email1@gmail.com'
+    const customer1 = new Customer(new EntityId(customerId1),new Email(customerEmail1));
+
+    const customerId2 = UUID();
+    const customerEmail2 ='email2@gmail.com'
+    const customer2 = new Customer(new EntityId(customerId2),new Email(customerEmail2));
+
+    const customerToAddCreditId = UUID();
+    const customerToAddCreditEmail ='email-to-patch@gmail.com'
+    const customerToAddCredit = new Customer(new EntityId(customerToAddCreditId),new Email(customerToAddCreditEmail));
+
+    const customerToDeleteId = UUID();
+    const customerToDeleteEmail ='email-to-delete@gmail.com'
+    const customerToDelete = new Customer(new EntityId(customerToDeleteId),new Email(customerToDeleteEmail));
+
+    beforeEach(async () => {
+
+        await customerRepository.save(customer1);
+        await customerRepository.save(customer2);
+        await customerRepository.save(customerToAddCredit);
+        await customerRepository.save(customerToDelete);
+    })
 
     afterEach(async () => {
         await dataSource.getRepository(TypeOrmCustomer).clear();
@@ -30,6 +59,7 @@ describe('customer api acceptance tests', () => {
         const cacheImpl = process.env.CACHE_IMPL || 'inMemory';
         cacheClearer = cacheClearerFactory.create(cacheImpl);
         dataSource = container.resolve<DataSource>('dataSource');
+        customerRepository = container.resolve<TypeOrmCustomerRepository>('customerRepository');
     });
 
     afterAll(async () => {
@@ -38,19 +68,19 @@ describe('customer api acceptance tests', () => {
     });
 
     describe('POST /api/customers', () => {
-        it('should respond with 201 resource created', async () => {
+        it('should respond with 202', async () => {
             const response = await request(app)
                 .post(customersApiPath)
                 .send({ id: UUID(), email: 'customer@example.com' });
-            expect(response.status).toBe(201);
+            expect(response.status).toBe(202);
             expect(response.text).toBe('');
         });
 
-        it('should respond with 201 resource created', async () => {
+        it('should respond with 202', async () => {
             const response = await request(app)
                 .post(customersApiPath)
                 .send({ id: UUID(), email: 'customer_withBillingAddress@example.com', billing_address:new BillingAddressDTO("Montevideo","Parana","Entre Rios","3000","Argentina") });
-            expect(response.status).toBe(201);
+            expect(response.status).toBe(202);
             expect(response.text).toBe('');
         });
 
@@ -97,53 +127,16 @@ describe('customer api acceptance tests', () => {
             expect(response.status).toBe(400);
             expect(response.text).toBe("Invalid email: invalid-email-example.com");
         });
-        it('should respond with 400 bad request when execute the endpoint twice with same ID', async () => {
-            const id = UUID();
-            const email = 'customer@example.com';
-            const anotherEmail = 'another-customer@example.com';
-            let response = await request(app)
-                .post(customersApiPath)
-                .send({ id: id, email: email });
-            expect(response.status).toBe(201);
-
-            response = await request(app)
-                .post(customersApiPath)
-                .send({ id: id, email: anotherEmail });
-            expect(response.status).toBe(400);
-            expect(response.text).toEqual(
-                `Entity with id ${id} already exists.`
-            );
-        });
-        it('should respond with 400 bad request when execute the endpoint twice with same email', async () => {
-            const id = UUID();
-            const anotherId = UUID();
-            const email = 'customer@example.com';
-            let response = await request(app)
-                .post(customersApiPath)
-                .send({ id: id, email: email });
-            expect(response.status).toBe(201);
-
-            response = await request(app)
-                .post(customersApiPath)
-                .send({ id: anotherId, email: email });
-            expect(response.status).toBe(400);
-            expect(response.text).toEqual(
-                `Entity with email ${email} already exists.`
-            );
-        });
     });
 
     describe('GET /api/customers/:id', () => {
         it('should respond with 200 ok with the customer resource', async () => {
-            const id = UUID();
-            const email = 'customer@example.com';
             const availableCredit = 0;
-            await request(app).post(customersApiPath).send({ id: id, email: email });
 
-            const response = await request(app).get(`${customersApiPath}/${id}`).send();
+            const response = await request(app).get(`${customersApiPath}/${customerId1}`).send();
             expect(response.status).toBe(200);
 
-            const expectedResponseText = JSON.stringify({ id: id, email: email, available_credit: availableCredit });
+            const expectedResponseText = JSON.stringify({ id: customerId1, email: customerEmail1, available_credit: availableCredit });
 
             expect(response.text).toBe(expectedResponseText);
         });
@@ -165,23 +158,14 @@ describe('customer api acceptance tests', () => {
 
     describe('GET /api/customers', () => {
         it('should respond with 200 ok with all the customer resources', async () => {
-            const id = UUID();
-            const email = 'customer@example.com';
-            const otherId = UUID();
-            const otherEmail = 'other-customer@example.com';
-            const credit = 0;
-            const otherCredit = 10.4;
-
-            await request(app).post(customersApiPath).send({ id: id, email: email });
-            await request(app).post(customersApiPath).send({ id: otherId, email: otherEmail });
-            await request(app).patch(`${customersApiPath}/${otherId}/add-credit`).send({ credit: 10.4 });
-
             const response = await request(app).get(customersApiPath).send();
             expect(response.status).toBe(200);
 
             const expectedResponseText = JSON.stringify([
-                { id: otherId, email: otherEmail, available_credit: otherCredit },
-                { id: id, email: email, available_credit: credit }
+                { id: customerId1, email: customerEmail1, available_credit: 0 },
+                { id: customerId2, email: customerEmail2, available_credit: 0 },
+                { id: customerToAddCreditId, email: customerToAddCreditEmail, available_credit: 0 },
+                { id: customerToDeleteId, email: customerToDeleteEmail, available_credit: 0 },
             ]);
 
             expect(response.text).toBe(expectedResponseText);
@@ -190,11 +174,8 @@ describe('customer api acceptance tests', () => {
 
     describe('DELETE /api/customers/:id', () => {
         it('should respond with 200 ok', async () => {
-            const id = UUID();
-            await request(app).post(customersApiPath).send({ id: id, email: 'customer@example.com' });
-
             const response = await request(app)
-                .delete(`${customersApiPath}/${id}`)
+                .delete(`${customersApiPath}/${customerToDeleteId}`)
                 .send();
             expect(response.status).toBe(200);
             expect(response.text).toBe('');
@@ -211,13 +192,9 @@ describe('customer api acceptance tests', () => {
     describe('PATCH /api/customers/:id/add-credit', () => {
 
         it('should respond with 200 ok', async () => {
-            const id = UUID();
             const credit = 10.5;
-            const email = 'customer@example.com';
 
-            await request(app).post(customersApiPath).send({ id: id, email: email });
-
-            const response = await request(app).patch(`${customersApiPath}/${id}/add-credit`).send({ credit: credit });
+            const response = await request(app).patch(`${customersApiPath}/${customerToAddCreditId}/add-credit`).send({ credit: credit });
 
             expect(response.status).toBe(200);
             expect(response.text).toBe('');

@@ -1,7 +1,7 @@
 import {BillingAddressDTO, CustomerDTO, CustomerService} from "../../services/customer";
 import {Request, Response} from "express";
 import {DomainConflictError, EntityNotFoundError} from "../../domain/errors";
-import {KeyObject} from "node:crypto";
+import {validate} from 'uuid'
 
 export class CustomerController {
     private customerService: CustomerService;
@@ -17,10 +17,17 @@ export class CustomerController {
                 res.status(400).send(errorMessage);
                 return;
             }
+            const errorMessageCustomer = this.validateCustomer(req.body)
 
-            await this.customerService.create(req.body.id, req.body.email, req.body.billing_address);
-            res.status(201).send();
+            if(errorMessageCustomer.length){
+                res.status(400).send(errorMessageCustomer);
+                return;
+            }
+
+            this.customerService.create(req.body.id, req.body.email, req.body.billing_address);
+            res.status(202).send();
         } catch (error) {
+            console.log(error)
             if (error instanceof DomainConflictError) {
                 res.status(400).send(error.message);
                 return;
@@ -93,7 +100,25 @@ export class CustomerController {
             available_credit: customerDTO.availableCredit,
         };
     }
+    private validateCustomer(customerDTO: CustomerDTO):string{
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+        if(!validate(customerDTO.id)){
+            return  `Invalid id: ${customerDTO.id}`
+        }
+
+        if(customerDTO.availableCredit >= 0){
+
+            return `Credit cannot be negative`;
+        }
+
+        if(!regex.test(customerDTO.email)){
+          return  `Invalid email: ${customerDTO.email}`
+        }
+
+
+        return '';
+    }
 
     private validateBillingAddress=(billingAddressBody?:BillingAddressDTO):string=>{
         let errorMessage = ''
