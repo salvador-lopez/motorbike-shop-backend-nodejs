@@ -2,10 +2,9 @@ import {BillingAddressDTO, CustomerDTO, CustomerService} from "../../services/cu
 import {Request, Response} from "express";
 import {DomainConflictError, EntityNotFoundError} from "../../domain/errors";
 import {validate} from 'uuid'
-import {BillingAddress} from "../../domain/customer";
 
 export class CustomerController {
-    private customerService: CustomerService;
+    private commandBus: CustomerService;
 
     constructor({customerService}: {customerService: CustomerService}) {
         this.customerService = customerService;
