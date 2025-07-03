@@ -2,6 +2,7 @@ import {BillingAddressDTO, CustomerDTO, CustomerService} from "../../services/cu
 import {Request, Response} from "express";
 import {DomainConflictError, EntityNotFoundError} from "../../domain/errors";
 import {validate} from 'uuid'
+import {BillingAddress} from "../../domain/customer";
 
 export class CustomerController {
     private customerService: CustomerService;
@@ -12,26 +13,16 @@ export class CustomerController {
 
     create = async (req: Request, res: Response): Promise<void> => {
         try {
-            const errorMessage = this.validateBillingAddress(req.body.billing_address)
-            if(errorMessage?.length){
-                res.status(400).send(errorMessage);
-                return;
-            }
-            const errorMessageCustomer = this.validateCustomer(req.body)
+            const {errorMessages, isInvalidPayload} = this.validatePayload(req.body);
 
-            if(errorMessageCustomer.length){
-                res.status(400).send(errorMessageCustomer);
+            if(isInvalidPayload){
+                res.status(400).send(errorMessages);
                 return;
             }
 
             this.customerService.create(req.body.id, req.body.email, req.body.billing_address);
             res.status(202).send();
         } catch (error) {
-            console.log(error)
-            if (error instanceof DomainConflictError) {
-                res.status(400).send(error.message);
-                return;
-            }
             res.status(500).send("Internal Server Error");
         }
     }
@@ -100,24 +91,29 @@ export class CustomerController {
             available_credit: customerDTO.availableCredit,
         };
     }
-    private validateCustomer(customerDTO: CustomerDTO):string{
+
+    private validatePayload({id, email, billing_address}:{id:string; email:string; billing_address?: BillingAddress}){
+        const errorCustomer = this.validateCustomer(id,email)
+        const errorBillingAddress = this.validateBillingAddress(billing_address)
+
+        const isInvalidPayload = errorCustomer.length || errorBillingAddress.length
+
+        return {isInvalidPayload, errorMessages: errorCustomer + errorBillingAddress}
+    }
+
+    private validateCustomer(id:string,email:string):string{
         const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        let errorMessages = ''
 
-        if(!validate(customerDTO.id)){
-            return  `Invalid id: ${customerDTO.id}`
+        if(!validate(id)){
+            errorMessages += `Invalid id: ${id}\n`
         }
 
-        if(customerDTO.availableCredit >= 0){
-
-            return `Credit cannot be negative`;
+        if(!regex.test(email)){
+            errorMessages +=   `Invalid email: ${email}`
         }
 
-        if(!regex.test(customerDTO.email)){
-          return  `Invalid email: ${customerDTO.email}`
-        }
-
-
-        return '';
+        return errorMessages;
     }
 
     private validateBillingAddress=(billingAddressBody?:BillingAddressDTO):string=>{
