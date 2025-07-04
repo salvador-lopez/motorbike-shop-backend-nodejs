@@ -1,21 +1,32 @@
 import { Command } from '@node-ts/bus-messages'
 import {BillingAddressDTO, CustomerService} from "../../../services/customer";
-import {handlerFor} from "@node-ts/bus-core";
+import {Handler} from "@node-ts/bus-core";
 
 export class CreateCustomerCommand extends Command {
-    $name = 'customers/create-customer'
-    $version = 0
-
-    constructor (
-        public readonly customerId: string,
-        public readonly email: string,
-        public readonly billingAddressDTO?: BillingAddressDTO
+    $name = 'customer/create'
+    $version = 1
+    
+    constructor(
+        readonly customerId: string,
+        readonly email: string,
+        readonly billingAddressDTO?: BillingAddressDTO,
     ) {
-        super()
+        super();
     }
 }
 
-export const createCustomerHandler = handlerFor(
-    CreateCustomerCommand,
-    command => CustomerService.create(command.customerId, command.email, command.billingAddressDTO)
-)
+export class CreateCustomerHandler implements Handler<CreateCustomerCommand> {
+    messageType  = CreateCustomerCommand
+
+    constructor(private readonly customerService: CustomerService) {}
+
+    async handle(command: CreateCustomerCommand): Promise<void> {
+        try {
+            await this.customerService.create(command.customerId, command.email, command.billingAddressDTO)
+        } catch (error) {
+            console.error(`[${this.messageType.name}] Handle Error:`, error);
+            throw error;
+        }
+
+    }
+}
