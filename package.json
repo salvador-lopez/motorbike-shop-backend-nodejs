@@ -31,6 +31,7 @@
     "@node-ts/bus-messages": "^1.1.0",
     "awilix": "^12.0.5",
     "awilix-express": "^9.0.2",
+    "debug": "^4.4.1",
     "dotenv": "^16.6.1",
     "express": "^4.21.2",
     "redis": "^4.7.1",
@@ -44,6 +45,7 @@
     "validator": "^13.15.0"
   },
   "devDependencies": {
+    "@types/debug": "^4.1.12",
     "@types/express": "^5.0.1",
     "@types/jest": "^29.5.14",
     "@types/node": "^22.13.14",
