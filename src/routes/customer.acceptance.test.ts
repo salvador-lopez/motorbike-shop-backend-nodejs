@@ -9,14 +9,17 @@ import {CustomerCacheClearer} from "../testutils/cache/customer-cache-clearer";
 import {DataSource} from "typeorm";
 import dotenv from "dotenv";
 
+
+
 describe('customer api acceptance tests', () => {
     const customersApiPath = '/api/customers';
     let app: Express;
     let dataSource: DataSource;
     let cacheClearer: CustomerCacheClearer
+    const customerId = UUID();
 
     afterEach(async () => {
-        await dataSource.getRepository(TypeOrmCustomer).clear();
+        await request(app).delete(`${customersApiPath}/${customerId}`).send();
         await cacheClearer.clear();
     });
 
@@ -75,7 +78,7 @@ describe('customer api acceptance tests', () => {
         });
 
         describe('BillingAddressDto validation', () => {
-            const id = UUID();
+            const id = customerId;
             const email = "email@example.com";
             const baseBillingAddressDto:BillingAddressDTO = {
                 street: 'Carrer de Llepant',
@@ -113,7 +116,7 @@ describe('customer api acceptance tests', () => {
         it('should respond with 400 bad request', async () => {
             const response = await request(app)
                 .post(customersApiPath)
-                .send({ id: UUID(), email: 'invalid-email-example.com' });
+                .send({ id:customerId, email: 'invalid-email-example.com' });
             expect(response.status).toBe(400);
             expect(response.text).toBe("Invalid email: invalid-email-example.com");
         });
@@ -121,7 +124,7 @@ describe('customer api acceptance tests', () => {
 
     describe('GET /api/customers/:id', () => {
         it('should respond with 200 ok with the customer resource', async () => {
-            const id = UUID();
+            const id = customerId;
             const email = 'email@gmail.com'
 
             await assertToCreateCustomer(id, email)
@@ -151,7 +154,7 @@ describe('customer api acceptance tests', () => {
 
     describe('GET /api/customers', () => {
         it('should respond with 200 ok with all the customer resources', async () => {
-            const id = UUID();
+            const id = customerId
             const email = 'email@gmail.com'
             const available_credit = 0
 
@@ -176,7 +179,7 @@ describe('customer api acceptance tests', () => {
 
     describe('DELETE /api/customers/:id', () => {
         it('should respond with 200 ok', async () => {
-            const id = UUID();
+            const id = customerId
             const email = 'email@gmail.com'
 
             await assertToCreateCustomer(id, email)
@@ -200,7 +203,7 @@ describe('customer api acceptance tests', () => {
 
         it('should respond with 200 ok', async () => {
             const credit = 10.5;
-            const id = UUID();
+            const id = customerId
             const email = 'email@gmail.com'
 
             await assertToCreateCustomer(id, email)
@@ -219,7 +222,7 @@ describe('customer api acceptance tests', () => {
             expect(response.text).toBe(`Entity not found with id ${id}`);
         });
         it('should respond with 400 bad request', async () => {
-            const id = UUID();
+            const id = customerId;
             const credit = -20;
 
             const response = await request(app).patch(`${customersApiPath}/${id}/add-credit`).send({ credit: credit });

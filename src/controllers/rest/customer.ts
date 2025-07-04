@@ -20,7 +20,10 @@ export class CustomerController {
                 return;
             }
 
-            this.customerService.create(req.body.id, req.body.email, req.body.billing_address);
+            this.customerService.create(req.body.id, req.body.email, req.body.billing_address)
+                .catch(error => {
+                    console.log('CustomerService create method', error)
+                });
             res.status(202).send();
         } catch (error) {
             res.status(500).send("Internal Server Error");
