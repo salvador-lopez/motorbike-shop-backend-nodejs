@@ -10,8 +10,6 @@ import {DataSource} from "typeorm";
 import dotenv from "dotenv";
 import {TypeOrmCustomer} from "../database/typeorm/data-model";
 
-
-
 describe('customer api acceptance tests', () => {
     const customersApiPath = '/api/customers';
     let app: Express;
@@ -61,13 +59,13 @@ describe('customer api acceptance tests', () => {
     }
 
     describe('POST /api/customers', () => {
-        it('should respond with 202', async () => {
+        it('should respond with 202 accepted', async () => {
             await waitAndAssertForCustomerCreation(UUID(), 'customer@example.com')
         });
 
 
 
-        it('should respond with 202', async () => {
+        it('should respond with 202 accepted with optional billingAddress', async () => {
             await waitAndAssertForCustomerCreation(
                 UUID(),
                 'customer@example.com',
