@@ -30,7 +30,7 @@ describe("Customer Redis Integration Test", () => {
         })
 
         await redisClient.connect();
-        redisCustomer = new RedisCustomerCache({redisClient: redisClient, redisPrefix: prefixKey});
+        redisCustomer = new RedisCustomerCache({redisClient: redisClient, redisCustomerPrefix: prefixKey});
     });
 
     afterAll(async () => {
