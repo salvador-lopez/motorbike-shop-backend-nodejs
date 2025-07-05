@@ -96,7 +96,7 @@ export class CustomerController {
         };
     }
 
-    private validatePayload({id, email, billing_address}:{id:string; email:string; billing_address?: BillingAddress}){
+    private validatePayload({id, email, billing_address}:{id:string; email:string; billing_address?: BillingAddressDTO}){
         const errorCustomer = this.validateCustomer(id,email)
         const errorBillingAddress = this.validateBillingAddress(billing_address)
 

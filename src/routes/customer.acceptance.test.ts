@@ -63,8 +63,6 @@ describe('customer api acceptance tests', () => {
             await waitAndAssertForCustomerCreation(UUID(), 'customer@example.com')
         });
 
-
-
         it('should respond with 202 accepted with optional billingAddress', async () => {
             await waitAndAssertForCustomerCreation(
                 UUID(),
