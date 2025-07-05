@@ -1,7 +1,8 @@
 import {BillingAddressDTO, CustomerDTO, CustomerService} from "../../services/customer";
 import {Request, Response} from "express";
 import {DomainConflictError, EntityNotFoundError} from "../../domain/errors";
-import {KeyObject} from "node:crypto";
+import {validate} from 'uuid'
+import {BillingAddress} from "../../domain/customer";
 
 export class CustomerController {
     private customerService: CustomerService;
@@ -12,19 +13,19 @@ export class CustomerController {
 
     create = async (req: Request, res: Response): Promise<void> => {
         try {
-            const errorMessage = this.validateBillingAddress(req.body.billing_address)
-            if(errorMessage?.length){
-                res.status(400).send(errorMessage);
+            const {errorMessages, isInvalidPayload} = this.validatePayload(req.body);
+
+            if(isInvalidPayload){
+                res.status(400).send(errorMessages);
                 return;
             }
 
-            await this.customerService.create(req.body.id, req.body.email, req.body.billing_address);
-            res.status(201).send();
+            this.customerService.create(req.body.id, req.body.email, req.body.billing_address)
+                .catch(error => {
+                    console.log('CustomerService create method', error)
+                });
+            res.status(202).send();
         } catch (error) {
-            if (error instanceof DomainConflictError) {
-                res.status(400).send(error.message);
-                return;
-            }
             res.status(500).send("Internal Server Error");
         }
     }
@@ -94,6 +95,29 @@ export class CustomerController {
         };
     }
 
+    private validatePayload({id, email, billing_address}:{id:string; email:string; billing_address?: BillingAddress}){
+        const errorCustomer = this.validateCustomer(id,email)
+        const errorBillingAddress = this.validateBillingAddress(billing_address)
+
+        const isInvalidPayload = errorCustomer.length || errorBillingAddress.length
+
+        return {isInvalidPayload, errorMessages: errorCustomer + errorBillingAddress}
+    }
+
+    private validateCustomer(id:string,email:string):string{
+        const regex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        let errorMessages = ''
+
+        if(!validate(id)){
+            errorMessages += `Invalid id: ${id}\n`
+        }
+
+        if(!regex.test(email)){
+            errorMessages +=   `Invalid email: ${email}`
+        }
+
+        return errorMessages;
+    }
 
     private validateBillingAddress=(billingAddressBody?:BillingAddressDTO):string=>{
         let errorMessage = ''

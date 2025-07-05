@@ -30,7 +30,7 @@ run-unit:
 
 run-integration:
 	@echo "Running integration tests..."
-	- npm run test:integration
+	npm run test:integration
 
 run-build:
 	@echo "Running integration tests..."
