@@ -1,8 +1,7 @@
-import { Command } from '@node-ts/bus-messages'
-import {BillingAddressDTO, CustomerService} from "../../../services/customer";
-import {Handler} from "@node-ts/bus-core";
+import {BillingAddressDTO, CustomerService} from "../../services/customer";
+import {Command, CommandHandler} from "../command";
 
-export class CreateCustomerCommand extends Command {
+export class CreateCustomerCommand implements Command {
     $name = 'customer/create'
     $version = 1
     
@@ -11,14 +10,13 @@ export class CreateCustomerCommand extends Command {
         readonly email: string,
         readonly billingAddressDTO?: BillingAddressDTO,
     ) {
-        super();
     }
 }
 
-export class CreateCustomerHandler implements Handler<CreateCustomerCommand> {
-    messageType  = CreateCustomerCommand
+export class CreateCustomerHandler implements CommandHandler<CreateCustomerCommand> {
+    messageType = CreateCustomerCommand
 
-    constructor(private readonly customerService: CustomerService) {}
+    constructor(private readonly customerService: CustomerService){}
 
     async handle(command: CreateCustomerCommand): Promise<void> {
         try {
@@ -27,6 +25,5 @@ export class CreateCustomerHandler implements Handler<CreateCustomerCommand> {
             console.error(`[${this.messageType.name}] Handle Error:`, error);
             throw error;
         }
-
     }
 }

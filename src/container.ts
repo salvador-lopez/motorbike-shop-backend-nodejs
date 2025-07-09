@@ -1,8 +1,8 @@
 import {createContainer, asClass, asValue, InjectionMode, asFunction, AwilixContainer} from 'awilix';
-import {CustomerService, CustomerDTO} from './services/customer';
+import {CustomerService, CustomerDTO} from './application/services/customer';
 import {CustomerController} from './controllers/rest/customer';
-import {RedisCustomerCache} from './services/cache/redis/customer-redis';
-import {InMemoryCustomerCache} from './services/cache/inMemory/customer-in-memory';
+import {RedisCustomerCache} from './application/services/cache/redis/customer-redis';
+import {InMemoryCustomerCache} from './application/services/cache/inMemory/customer-in-memory';
 import {createClient} from 'redis';
 import { DataSource} from 'typeorm';
 import { TypeOrmCustomer} from './database/typeorm/data-model';
@@ -14,8 +14,8 @@ import {RedisCustomerCacheClearer} from "./testutils/cache/redis/customer-cache-
 import {InMemoryCustomerCacheClearer} from "./testutils/cache/inMemory/customer-cache-clearer";
 import {CustomerCacheClearerFactory} from "./testutils/cache/customer-cache-clearer-factory";
 import {Bus} from "@node-ts/bus-core";
-import {CreateCustomerHandler} from "./messaging/node-ts-bus/commands/customer";
 import {AwilixContainerAdapter} from "./messaging/node-ts-bus/awilix-container-adapter";
+import {CreateCustomerHandler} from "./application/command/commands/create-customer";
 
 const registerTestServices = (container: AwilixContainer): void => {
     container.register({

@@ -1,5 +1,5 @@
 import {CustomerDTO, CustomerService} from './customer';
-import {BillingAddress, Customer, CustomerRepository} from '../domain/customer';
+import {BillingAddress, Customer, CustomerRepository} from '../../domain/customer';
 import {BillingAddressDTO} from './customer';
 import {v4 as UUID} from "uuid";
 import { mock, mockReset } from 'jest-mock-extended';
@@ -8,8 +8,8 @@ import {
     EntityNotFoundError,
     EntityWithSameEmailAlreadyExistError,
     EntityWithSameIdAlreadyExistError
-} from "../domain/errors";
-import {EntityId, Email, Credit} from "../domain/common";
+} from "../../domain/errors";
+import {EntityId, Email, Credit} from "../../domain/common";
 import { CustomerCache } from "./cache/customer-cache";
 
 describe('CustomerService', () => {

@@ -1,15 +1,15 @@
-import {BillingAddressDTO, CustomerDTO, CustomerService} from "../../services/customer";
+import {BillingAddressDTO, CustomerDTO, CustomerService} from "../../application/services/customer";
 import {Request, Response} from "express";
 import {DomainConflictError, EntityNotFoundError} from "../../domain/errors";
-import {BusInstance} from "@node-ts/bus-core";
-import {CreateCustomerCommand} from "../../messaging/node-ts-bus/commands/customer";
+import {CreateCustomerCommand} from "../../application/command/commands/create-customer";
 import {validate} from 'uuid'
+import {CommandBus} from "../../application/command/command-bus";
 
 export class CustomerController {
     private customerService: CustomerService;
-    private commandBus: BusInstance;
+    private commandBus: CommandBus;
 
-    constructor({customerService, commandBus}: {customerService: CustomerService, commandBus: BusInstance}) {
+    constructor({customerService, commandBus}: {customerService: CustomerService, commandBus: CommandBus}) {
         this.customerService = customerService;
         this.commandBus = commandBus;
     }
