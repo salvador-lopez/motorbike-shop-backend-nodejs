@@ -14,8 +14,8 @@ import {RedisCustomerCacheClearer} from "./testutils/cache/redis/customer-cache-
 import {InMemoryCustomerCacheClearer} from "./testutils/cache/inMemory/customer-cache-clearer";
 import {CustomerCacheClearerFactory} from "./testutils/cache/customer-cache-clearer-factory";
 import {Bus} from "@node-ts/bus-core";
-import {CreateCustomerHandler} from "./messaging/node-ts-bus/commands/customer";
 import {AwilixContainerAdapter} from "./messaging/node-ts-bus/awilix-container-adapter";
+import {CreateCustomerHandler} from "./application/command/commands/create-customer";
 
 const registerTestServices = (container: AwilixContainer): void => {
     container.register({
