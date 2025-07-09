@@ -1,4 +1,4 @@
-import {BillingAddressDTO, CustomerDTO, CustomerService} from "../../services/customer";
+import {BillingAddressDTO, CustomerDTO, CustomerService} from "../../application/services/customer";
 import {Request, Response} from "express";
 import {DomainConflictError, EntityNotFoundError} from "../../domain/errors";
 import {CreateCustomerCommand} from "../../application/command/commands/create-customer";

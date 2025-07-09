@@ -1,10 +1,10 @@
-import {Customer, CustomerRepository, BillingAddress} from "../domain/customer";
-import {EntityId, Email, Credit} from "../domain/common";
+import {Customer, CustomerRepository, BillingAddress} from "../../domain/customer";
+import {EntityId, Email, Credit} from "../../domain/common";
 import {
     EntityNotFoundError,
     EntityWithSameEmailAlreadyExistError,
     EntityWithSameIdAlreadyExistError
-} from "../domain/errors";
+} from "../../domain/errors";
 import {CustomerCache} from "./cache/customer-cache";
 
 export class CustomerService {

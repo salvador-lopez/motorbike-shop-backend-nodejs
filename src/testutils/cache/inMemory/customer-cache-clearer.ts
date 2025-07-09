@@ -1,5 +1,5 @@
 import {CustomerCacheClearer} from "../customer-cache-clearer";
-import {CustomerDTO} from "../../../services/customer";
+import {CustomerDTO} from "../../../application/services/customer";
 
 export class InMemoryCustomerCacheClearer implements CustomerCacheClearer {
     private memory: Map<string, CustomerDTO>;

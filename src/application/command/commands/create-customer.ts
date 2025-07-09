@@ -1,4 +1,4 @@
-import {BillingAddressDTO, CustomerService} from "../../../services/customer";
+import {BillingAddressDTO, CustomerService} from "../../services/customer";
 import {Command, CommandHandler} from "../command";
 
 export class CreateCustomerCommand implements Command {

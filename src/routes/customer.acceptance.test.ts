@@ -3,7 +3,7 @@ import {Response} from 'supertest';
 import {Express} from "express";
 import createApp from "../app";
 import {v4 as UUID} from "uuid";
-import {BillingAddressDTO} from "../services/customer";
+import {BillingAddressDTO} from "../application/services/customer";
 import {CustomerCacheClearerFactory} from "../testutils/cache/customer-cache-clearer-factory";
 import {CustomerCacheClearer} from "../testutils/cache/customer-cache-clearer";
 import {DataSource} from "typeorm";

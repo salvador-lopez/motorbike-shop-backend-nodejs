@@ -1,8 +1,8 @@
 import {createContainer, asClass, asValue, InjectionMode, asFunction, AwilixContainer} from 'awilix';
-import {CustomerService, CustomerDTO} from './services/customer';
+import {CustomerService, CustomerDTO} from './application/services/customer';
 import {CustomerController} from './controllers/rest/customer';
-import {RedisCustomerCache} from './services/cache/redis/customer-redis';
-import {InMemoryCustomerCache} from './services/cache/inMemory/customer-in-memory';
+import {RedisCustomerCache} from './application/services/cache/redis/customer-redis';
+import {InMemoryCustomerCache} from './application/services/cache/inMemory/customer-in-memory';
 import {createClient} from 'redis';
 import { DataSource} from 'typeorm';
 import { TypeOrmCustomer} from './database/typeorm/data-model';
