@@ -1,5 +1,6 @@
 import {OrderItem, PurchaseOrder, PurchaseOrderRepository} from "../domain/purchase-order";
 import {EntityId} from "../domain/common";
+import {EntityWithSameIdAlreadyExistError} from "../domain/errors";
 
 
 export class PurchaseOrderService {
@@ -13,9 +14,14 @@ export class PurchaseOrderService {
 
     public async create(id:string,customerId: string,orderItems:OrderItemDTO[]): Promise<void> {
         const orders = orderItems.map(dto => new OrderItem(new EntityId(dto.productId),dto.quantity,dto.unitPrice));
-      const purchaseOrder = new PurchaseOrder(new EntityId(id), new EntityId(customerId), orders);
+      const newPurchaseOrder = new PurchaseOrder(new EntityId(id), new EntityId(customerId), orders);
 
-      await this.repository.create(purchaseOrder);
+        let purchaseOrder = await this.repository.findById(newPurchaseOrder.id);
+        if (purchaseOrder) {
+            throw new EntityWithSameIdAlreadyExistError(newPurchaseOrder.id);
+        }
+
+      await this.repository.create(newPurchaseOrder);
     }
 }
 

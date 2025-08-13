@@ -2,6 +2,7 @@ import {EntityId} from "./common";
 
 export interface PurchaseOrderRepository {
     create(purchaseOrder: PurchaseOrder): Promise<void>;
+    findById(id:EntityId):Promise<PurchaseOrder | null>
 }
 
 export class PurchaseOrder {
