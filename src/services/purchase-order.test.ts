@@ -3,7 +3,7 @@ import {v4 as UUID} from "uuid";
 import { EntityId} from "../domain/common";
 import { PurchaseOrder, PurchaseOrderRepository} from "../domain/purchase-order";
 import {OrderItemDTO, PurchaseOrderService} from "./purchase-order";
-import {DomainConflictError, EntityNotFoundError, EntityWithSameIdAlreadyExistError} from "../domain/errors";
+import {DomainConflictError, EntityWithSameIdAlreadyExistError} from "../domain/errors";
 import {OrderItem} from "../domain/order-item";
 
 describe('PurchaseOrderService', () => {
@@ -63,7 +63,7 @@ describe('PurchaseOrderService', () => {
         }
     );
 
-    it('throw EntityWithSameEmailAlreadyExistError', async () => {
+    it('throw EntityWithSameIdAlreadyExistError', async () => {
         const id = UUID();
         const customerId = UUID()
         const orderItemId= UUID()
