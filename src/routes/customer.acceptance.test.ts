@@ -8,7 +8,7 @@ import {CustomerCacheClearerFactory} from "../testutils/cache/customer-cache-cle
 import {CustomerCacheClearer} from "../testutils/cache/customer-cache-clearer";
 import {DataSource} from "typeorm";
 import dotenv from "dotenv";
-import {TypeOrmCustomer} from "../database/typeorm/data-model";
+import {TypeOrmCustomer} from "../database/typeorm/datamodel/customer";
 
 
 

@@ -1,16 +1,17 @@
 import {DataSource} from "typeorm";
-import {TypeOrmCustomer} from "./data-model";
+import {TypeOrmCustomer} from "./datamodel/customer";
+import {TypeOrmOrderItem, TypeOrmPurchaseOrder} from "./datamodel/purchase-order";
 
 export const defaultDataSource = new DataSource({
     type: "sqlite",
     database: "./src/database/sqlite/motorbike-shop.db",
     synchronize: true,
-    entities: [TypeOrmCustomer],
+    entities: [TypeOrmCustomer, TypeOrmPurchaseOrder, TypeOrmOrderItem],
 });
 
 export const testDataSource = new DataSource({
     type: "sqlite",
     database: ":memory:",
     synchronize: true, // Auto-create tables for testing
-    entities: [TypeOrmCustomer],
+    entities: [TypeOrmCustomer, TypeOrmPurchaseOrder, TypeOrmOrderItem],
 });

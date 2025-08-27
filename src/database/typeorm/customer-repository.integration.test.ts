@@ -3,7 +3,7 @@ import {EntityId, Email, Credit} from "../../domain/common";
 import {BillingAddress, Customer} from "../../domain/customer";
 import { v4 as UUID} from 'uuid';
 import {TypeOrmCustomerRepository} from "./customer-repository";
-import {TypeOrmCustomer} from "./data-model";
+import {TypeOrmCustomer} from "./datamodel/customer";
 import {QueryFailedError} from "typeorm";
 import {Repository} from "typeorm/repository/Repository";
 
