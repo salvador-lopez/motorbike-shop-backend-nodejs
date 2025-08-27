@@ -2,8 +2,8 @@ import {mock, mockReset} from "jest-mock-extended";
 import {v4 as UUID} from "uuid";
 import { EntityId} from "../domain/common";
 import { PurchaseOrder, PurchaseOrderRepository} from "../domain/purchase-order";
-import {OrderItemDTO, PurchaseOrderService} from "./purchase-order";
-import {DomainConflictError, EntityWithSameIdAlreadyExistError} from "../domain/errors";
+import {OrderItemDTO, PurchaseOrderDTO, PurchaseOrderService} from "./purchase-order";
+import {DomainConflictError, EntityNotFoundError, EntityWithSameIdAlreadyExistError} from "../domain/errors";
 import {OrderItem} from "../domain/order-item";
 
 describe('PurchaseOrderService', () => {
@@ -82,6 +82,44 @@ describe('PurchaseOrderService', () => {
         expect(mockRepository.findById).toHaveBeenCalledWith(new EntityId(id));
         await expect(resultPromise).rejects.toThrow(`Entity with id ${id} already exists.`);
         await expect(resultPromise).rejects.toBeInstanceOf(EntityWithSameIdAlreadyExistError);
+    })
+    })
+
+    describe('get', ()=>{
+
+    it('should return the purchase order',async ()=>{
+        const id = UUID();
+        const customerId = UUID()
+        const orderItemId= UUID()
+        const orderItemProductId= UUID()
+        const orderItemPrice = 100000
+        const orderItemQuantity = 1
+        const orderItem = [new OrderItem(new EntityId(orderItemId), new EntityId(orderItemProductId), orderItemQuantity, orderItemPrice)]
+        const orderItemsDto = [new OrderItemDTO(orderItemId,orderItemProductId, orderItemQuantity,  orderItemPrice)]
+        const expectedPurchaseOrder = new PurchaseOrderDTO(id, customerId, orderItemsDto)
+
+        const purchaseOrder = new PurchaseOrder(new EntityId(id), new EntityId(customerId), orderItem);
+
+        mockRepository.findById.mockImplementationOnce(async () => purchaseOrder);
+
+        const result =  await purchaseOrderService.get(id)
+
+        expect(mockRepository.findById).toHaveBeenCalledWith(new EntityId(id));
+        expect(result.id).toEqual(expectedPurchaseOrder.id);
+        expect(result.customerId).toEqual(expectedPurchaseOrder.customerId);
+        expect(result.orderItems).toEqual(expectedPurchaseOrder.orderItems);
+    })
+
+    it('should throw EntityNotFound',async ()=>{
+        const id = UUID();
+
+        mockRepository.findById.mockImplementationOnce(async () => null);
+
+        const resultPromise =  purchaseOrderService.get(id)
+
+        expect(mockRepository.findById).toHaveBeenCalledWith(new EntityId(id));
+        await expect(resultPromise).rejects.toThrow(`Entity not found with id ${id}`);
+        await expect(resultPromise).rejects.toBeInstanceOf(EntityNotFoundError);
     })
     })
 
