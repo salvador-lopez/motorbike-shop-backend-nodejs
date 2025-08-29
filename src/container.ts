@@ -16,6 +16,8 @@ import {InMemoryCustomerCacheClearer} from "./testutils/cache/inMemory/customer-
 import {CustomerCacheClearerFactory} from "./testutils/cache/customer-cache-clearer-factory";
 import {TypeOrmPurchaseOrder} from "./database/typeorm/datamodel/purchase-order";
 import {TypeOrmPurchaseOrderRepository} from "./database/typeorm/purchase-order-repository";
+import {PurchaseOrderController} from "./controllers/rest/purchase-order";
+import {PurchaseOrderService} from "./services/purchase-order";
 
 export const createAppContainer = async () => {
     const container = createContainer({
@@ -90,6 +92,8 @@ export const createAppContainer = async () => {
         customerCache: asFunction(makeCustomerCache).scoped(),
         customerService: asClass(CustomerService).scoped(),
         customerController: asClass(CustomerController).scoped(),
+        purchaseOrderController:asClass(PurchaseOrderController).scoped(),
+        purchaseOrderService:asClass(PurchaseOrderService).scoped(),
     });
 
     return container;
