@@ -1,14 +1,17 @@
 import {BillingAddressDTO, CustomerDTO, CustomerService} from "../../services/customer";
 import {Request, Response} from "express";
 import {DomainConflictError, EntityNotFoundError} from "../../domain/errors";
+import {BusInstance} from "@node-ts/bus-core";
+import {CreateCustomerCommand} from "../../messaging/node-ts-bus/commands/customer";
 import {validate} from 'uuid'
-import {BillingAddress} from "../../domain/customer";
 
 export class CustomerController {
     private customerService: CustomerService;
+    private commandBus: BusInstance;
 
-    constructor({customerService}: {customerService: CustomerService}) {
+    constructor({customerService, commandBus}: {customerService: CustomerService, commandBus: BusInstance}) {
         this.customerService = customerService;
+        this.commandBus = commandBus;
     }
 
     create = async (req: Request, res: Response): Promise<void> => {
@@ -19,11 +22,9 @@ export class CustomerController {
                 res.status(400).send(errorMessages);
                 return;
             }
-
-            this.customerService.create(req.body.id, req.body.email, req.body.billing_address)
-                .catch(error => {
-                    console.log('CustomerService create method', error)
-                });
+            await this.commandBus.send(
+                new CreateCustomerCommand(req.body.id, req.body.email, req.body.billing_address)
+            );
             res.status(202).send();
         } catch (error) {
             res.status(500).send("Internal Server Error");
@@ -95,7 +96,7 @@ export class CustomerController {
         };
     }
 
-    private validatePayload({id, email, billing_address}:{id:string; email:string; billing_address?: BillingAddress}){
+    private validatePayload({id, email, billing_address}:{id:string; email:string; billing_address?: BillingAddressDTO}){
         const errorCustomer = this.validateCustomer(id,email)
         const errorBillingAddress = this.validateBillingAddress(billing_address)
 
