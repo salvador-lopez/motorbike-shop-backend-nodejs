@@ -102,7 +102,7 @@ flowchart TD
     click App "https://github.com/salvador-lopez/motorbike-shop-backend-nodejs/blob/main/src/app.ts"
     click CustomerService "https://github.com/salvador-lopez/motorbike-shop-backend-nodejs/blob/main/src/services/customer.ts"
     click CustomerRepository "https://github.com/salvador-lopez/motorbike-shop-backend-nodejs/blob/main/src/database/typeorm/customer-repository.ts"
-    click DataModel "https://github.com/salvador-lopez/motorbike-shop-backend-nodejs/blob/main/src/database/typeorm/data-model.ts"
+    click DataModel "https://github.com/salvador-lopez/motorbike-shop-backend-nodejs/blob/main/src/database/typeorm/customer.ts"
     click DataSource "https://github.com/salvador-lopez/motorbike-shop-backend-nodejs/blob/main/src/database/typeorm/data-source.ts"
     click CustomerRepositoryTest "https://github.com/salvador-lopez/motorbike-shop-backend-nodejs/blob/main/src/database/typeorm/customer-repository.integration.test.ts"
     click DatabaseErrors "https://github.com/salvador-lopez/motorbike-shop-backend-nodejs/blob/main/src/database/errors.ts"

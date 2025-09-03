@@ -1,4 +1,5 @@
 import {EntityId} from "./common";
+import {OrderItem} from "./order-item";
 
 export interface PurchaseOrderRepository {
     create(purchaseOrder: PurchaseOrder): Promise<void>;
@@ -14,17 +15,5 @@ export class PurchaseOrder {
         this.id = id;
         this.customerId = customerId;
         this.orderItems = orderItems;
-    }
-}
-
-export class OrderItem {
-    readonly productId: EntityId;
-    readonly quantity: number;
-    readonly unitPrice: number;
-
-    constructor(productId: EntityId, quantity: number, unitPrice: number) {
-        this.productId = productId;
-        this.quantity = quantity;
-        this.unitPrice = unitPrice;
     }
 }

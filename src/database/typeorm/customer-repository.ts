@@ -1,6 +1,6 @@
 import {Customer, CustomerRepository} from "../../domain/customer";
 import {Repository} from "typeorm/repository/Repository";
-import {TypeOrmCustomer} from "./data-model";
+import {TypeOrmCustomer} from "./datamodel/customer";
 import {Credit, Email, EntityId} from "../../domain/common";
 
 export class TypeOrmCustomerRepository implements CustomerRepository {

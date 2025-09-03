@@ -6,7 +6,7 @@ import { CustomerCache } from './services/cache/customer-cache';
 import { InMemoryCustomerCache } from './services/cache/inMemory/customer-in-memory';
 import { createClient, RedisClientType } from 'redis';
 import { DataSource } from 'typeorm';
-import { TypeOrmCustomer } from './database/typeorm/data-model';
+import { TypeOrmCustomer } from './database/typeorm/datamodel/customer';
 import {Repository} from "typeorm/repository/Repository";
 import {TypeOrmCustomerRepository} from "./database/typeorm/customer-repository";
 import {defaultDataSource, testDataSource} from "./database/typeorm/data-source";
@@ -14,6 +14,10 @@ import {NoOpCustomerCacheClearer} from "./testutils/cache/customer-cache-clearer
 import {RedisCustomerCacheClearer} from "./testutils/cache/redis/customer-cache-clearer";
 import {InMemoryCustomerCacheClearer} from "./testutils/cache/inMemory/customer-cache-clearer";
 import {CustomerCacheClearerFactory} from "./testutils/cache/customer-cache-clearer-factory";
+import {TypeOrmPurchaseOrder} from "./database/typeorm/datamodel/purchase-order";
+import {TypeOrmPurchaseOrderRepository} from "./database/typeorm/purchase-order-repository";
+import {PurchaseOrderController} from "./controllers/rest/purchase-order";
+import {PurchaseOrderService} from "./services/purchase-order";
 
 export const createAppContainer = async () => {
     const container = createContainer({
@@ -53,6 +57,10 @@ export const createAppContainer = async () => {
     const getCustomerRepositoryConn = (): Repository<TypeOrmCustomer> => {
         return dataSource.getRepository(TypeOrmCustomer);
     }
+
+    const getPurchaseOrderRepositoryConn = (): Repository<TypeOrmPurchaseOrder> => {
+        return dataSource.getRepository(TypeOrmPurchaseOrder);
+    }
     
     const customerCacheMemory = new Map<string, CustomerDTO>();
     let redisClient: RedisClientType;
@@ -79,9 +87,13 @@ export const createAppContainer = async () => {
         dataSource: asValue(dataSource),
         customerRepositoryConn: asFunction(getCustomerRepositoryConn).scoped(),
         customerRepository: asClass(TypeOrmCustomerRepository).scoped(),
+        purchaseOrderRepositoryConn:asFunction(getPurchaseOrderRepositoryConn).scoped(),
+        purchaseOrderRepository:asClass(TypeOrmPurchaseOrderRepository).scoped(),
         customerCache: asFunction(makeCustomerCache).scoped(),
         customerService: asClass(CustomerService).scoped(),
         customerController: asClass(CustomerController).scoped(),
+        purchaseOrderController:asClass(PurchaseOrderController).scoped(),
+        purchaseOrderService:asClass(PurchaseOrderService).scoped(),
     });
 
     return container;
