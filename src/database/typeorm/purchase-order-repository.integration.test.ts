@@ -7,12 +7,14 @@ import {TypeOrmOrderItem, TypeOrmPurchaseOrder} from "./datamodel/purchase-order
 import {TypeOrmPurchaseOrderRepository} from "./purchase-order-repository";
 import {PurchaseOrder} from "../../domain/purchase-order";
 import {OrderItem} from "../../domain/order-item";
+import {TypeOrmTransactionManager} from "./transaction-manager";
 
 let purchaseOrderRepo: TypeOrmPurchaseOrderRepository;
+const transactionManager = new TypeOrmTransactionManager({dataSource: testDataSource});
 const typeOrmRepo: Repository<TypeOrmPurchaseOrder> = testDataSource.getRepository(TypeOrmPurchaseOrder);
 
 beforeEach(async () => {
-    purchaseOrderRepo = new TypeOrmPurchaseOrderRepository({purchaseOrderRepositoryConn: typeOrmRepo});
+    purchaseOrderRepo = new TypeOrmPurchaseOrderRepository({transactionManager: transactionManager});
     await typeOrmRepo.clear();
 });
 
@@ -42,10 +44,10 @@ describe("PurchaseOrder Repository Integration Test", () => {
         if (purchaseOrderDataModel !== null) {
             expect(purchaseOrderDataModel.id).toBe(entityId.value);
             expect(purchaseOrderDataModel.customerId).toBe(customerId.value);
-            expect(purchaseOrder.orderItems[0].id).toBe(orderItemId);
-            expect(purchaseOrder.orderItems[0].unitPrice).toBe(orderItemUnitPrice);
-            expect(purchaseOrder.orderItems[0].quantity).toBe(orderItemQuantity);
-            expect(purchaseOrder.orderItems[0].productId).toBe(orderItemProductId);
+            expect(purchaseOrderDataModel.orderItems[0].id).toBe(orderItemId.value);
+            expect(purchaseOrderDataModel.orderItems[0].unitPrice).toBe(orderItemUnitPrice);
+            expect(purchaseOrderDataModel.orderItems[0].quantity).toBe(orderItemQuantity);
+            expect(purchaseOrderDataModel.orderItems[0].productId).toBe(orderItemProductId.value);
         }
     });
 
@@ -79,5 +81,35 @@ describe("PurchaseOrder Repository Integration Test", () => {
 
         const purchaseOrder = await purchaseOrderRepo.findById(entityId);
         expect(purchaseOrder).toBeNull();
+    });
+
+    it("should rollback purchase order and items when item insert fails inside a transaction", async () => {
+        const entityId = new EntityId(UUID());
+        const customerId = new EntityId(UUID());
+
+        // Force a failure by using duplicated item ids (violates PK on order_items)
+        const duplicatedItemId = new EntityId(UUID());
+        const productIdA = new EntityId(UUID());
+        const productIdB = new EntityId(UUID());
+        const quantity = 1;
+        const price = 1000;
+
+        const orderItems = [
+            new OrderItem(duplicatedItemId, productIdA, quantity, price),
+            new OrderItem(duplicatedItemId, productIdB, quantity, price),
+        ];
+
+        const purchaseOrder = new PurchaseOrder(entityId, customerId, orderItems);
+
+        // Execute within a transaction: should rollback entirely on failure
+        await expect(
+            transactionManager.transaction(async () => {
+                await purchaseOrderRepo.create(purchaseOrder);
+            })
+        ).rejects.toBeInstanceOf(QueryFailedError);
+
+        // After rollback, the purchase order must not exist
+        const persisted = await typeOrmRepo.findOneBy({ id: entityId.value });
+        expect(persisted).toBeNull();
     });
 });

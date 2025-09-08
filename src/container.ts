@@ -18,6 +18,7 @@ import {TypeOrmPurchaseOrder} from "./database/typeorm/datamodel/purchase-order"
 import {TypeOrmPurchaseOrderRepository} from "./database/typeorm/purchase-order-repository";
 import {PurchaseOrderController} from "./controllers/rest/purchase-order";
 import {PurchaseOrderService} from "./services/purchase-order";
+import {TypeOrmTransactionManager} from "./database/typeorm/transaction-manager";
 
 export const createAppContainer = async () => {
     const container = createContainer({
@@ -87,13 +88,15 @@ export const createAppContainer = async () => {
         dataSource: asValue(dataSource),
         customerRepositoryConn: asFunction(getCustomerRepositoryConn).scoped(),
         customerRepository: asClass(TypeOrmCustomerRepository).scoped(),
-        purchaseOrderRepositoryConn:asFunction(getPurchaseOrderRepositoryConn).scoped(),
-        purchaseOrderRepository:asClass(TypeOrmPurchaseOrderRepository).scoped(),
+        purchaseOrderRepositoryConn: asFunction(getPurchaseOrderRepositoryConn).scoped(),
+        transactionManager: asClass(TypeOrmTransactionManager).scoped(),
+        purchaseOrderRepository: asClass(TypeOrmPurchaseOrderRepository).scoped(),
         customerCache: asFunction(makeCustomerCache).scoped(),
         customerService: asClass(CustomerService).scoped(),
         customerController: asClass(CustomerController).scoped(),
-        purchaseOrderController:asClass(PurchaseOrderController).scoped(),
-        purchaseOrderService:asClass(PurchaseOrderService).scoped(),
+        purchaseOrderController: asClass(PurchaseOrderController).scoped(),
+        purchaseOrderService: asClass(PurchaseOrderService).scoped(),
+        unitOfWork: asFunction(({ transactionManager }) => transactionManager).scoped(),
     });
 
     return container;
