@@ -1,4 +1,4 @@
-import { TypeOrmTransactionManager } from "./transaction-manager";
+
 import { testDataSource } from "./data-source";
 import { v4 as UUID } from "uuid";
 import { EntityId } from "../../domain/common";
@@ -6,16 +6,19 @@ import { OrderItem } from "../../domain/order-item";
 import { PurchaseOrder } from "../../domain/purchase-order";
 import { TypeOrmPurchaseOrderRepository } from "./purchase-order-repository";
 import { QueryFailedError } from "typeorm";
+import {TypeOrmConnection} from "./db-connection";
+import {TypeOrmPurchaseOrder} from "./datamodel/purchase-order";
+import {TypeOrmOrderItem} from "./datamodel/order-item";
 
 describe("TypeOrmTransactionManager (integration)", () => {
-  let transactionManager: TypeOrmTransactionManager;
+  let dbConnection: TypeOrmConnection;
   let purchaseOrderRepository: TypeOrmPurchaseOrderRepository;
 
   beforeAll(async () => {
     await testDataSource.initialize();
-    transactionManager = new TypeOrmTransactionManager({ dataSource: testDataSource });
+    dbConnection = new TypeOrmConnection({ dataSource: testDataSource });
 
-    purchaseOrderRepository = new TypeOrmPurchaseOrderRepository({ transactionManager });
+    purchaseOrderRepository = new TypeOrmPurchaseOrderRepository({ purchaseOrderRepositoryConn: dbConnection.entityManager().getRepository(TypeOrmPurchaseOrder), orderItemRepositoryConn: dbConnection.entityManager().getRepository(TypeOrmOrderItem) });
   });
 
   afterAll(async () => {
@@ -40,7 +43,7 @@ describe("TypeOrmTransactionManager (integration)", () => {
     ];
     const purchaseOrder = new PurchaseOrder(poId, customerId, orderItems);
 
-    await transactionManager.transaction(async () => {
+    await dbConnection.transaction(async () => {
       await purchaseOrderRepository.create(purchaseOrder);
     });
 
@@ -68,7 +71,7 @@ describe("TypeOrmTransactionManager (integration)", () => {
     const purchaseOrder = new PurchaseOrder(poId, customerId, orderItems);
 
     await expect(
-      transactionManager.transaction(async () => {
+        dbConnection.transaction(async () => {
         await purchaseOrderRepository.create(purchaseOrder);
       })
     ).rejects.toBeInstanceOf(QueryFailedError);

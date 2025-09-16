@@ -1,16 +1,21 @@
 import {PurchaseOrder, PurchaseOrderRepository} from "../../domain/purchase-order";
-import {TypeOrmOrderItem, TypeOrmPurchaseOrder} from "./datamodel/purchase-order";
+import {TypeOrmPurchaseOrder} from "./datamodel/purchase-order";
 import {EntityId} from "../../domain/common";
 import {OrderItem} from "../../domain/order-item";
-import {TypeOrmTransactionManager} from "./transaction-manager";
+import {Repository} from "typeorm/repository/Repository";
+import {TypeOrmOrderItem} from "./datamodel/order-item";
 
 
 export class TypeOrmPurchaseOrderRepository implements PurchaseOrderRepository{
 
-    private typeOrmRepoWithTransaction: TypeOrmTransactionManager;
+    private purchaseOrderRepository: Repository<TypeOrmPurchaseOrder>;
+    private orderItemRepository: Repository<TypeOrmOrderItem>;
 
-    constructor({transactionManager}:{transactionManager: TypeOrmTransactionManager}) {
-        this.typeOrmRepoWithTransaction = transactionManager;
+    constructor({ purchaseOrderRepositoryConn, orderItemRepositoryConn } : {
+        purchaseOrderRepositoryConn:  Repository<TypeOrmPurchaseOrder>, orderItemRepositoryConn: Repository<TypeOrmOrderItem>}) {
+
+         this.purchaseOrderRepository = purchaseOrderRepositoryConn;
+         this.orderItemRepository = orderItemRepositoryConn;
     }
 
     async create(purchaseOrder: PurchaseOrder): Promise<void> {
@@ -19,29 +24,19 @@ export class TypeOrmPurchaseOrderRepository implements PurchaseOrderRepository{
                                                     .map(({id,productId,quantity,unitPrice}) =>
                                                         new TypeOrmOrderItem(id.value, productId.value, quantity, unitPrice))
 
-        await this.typeOrmRepoWithTransaction
-                            .repository
-                            .createQueryBuilder()
-                            .insert()
-                            .into(TypeOrmPurchaseOrder)
-                            .values(new TypeOrmPurchaseOrder(purchaseOrder.id.value, purchaseOrder.customerId.value, []))
-                            .execute();
+        await this.purchaseOrderRepository
+                            .insert(new TypeOrmPurchaseOrder(purchaseOrder.id.value, purchaseOrder.customerId.value, []));
 
-        await this.typeOrmRepoWithTransaction
-                            .repository
-                            .createQueryBuilder()
-                            .insert()
-                            .into(TypeOrmOrderItem)
-                            .values(
+        await this.orderItemRepository
+                            .insert(
                                 typeOrmOrderItems.map(item => ({...item,
                                     purchaseOrder: { id: purchaseOrder.id.value },
                                 }))
                             )
-                            .execute();
     }
 
    async findById(id: EntityId): Promise<PurchaseOrder | null> {
-        const purchaseOrder = await this.typeOrmRepoWithTransaction.repository.findOneBy(TypeOrmPurchaseOrder, { id: id.value});
+        const purchaseOrder = await this.purchaseOrderRepository.findOneBy({ id: id.value});
 
         if (!purchaseOrder) {
             return null;

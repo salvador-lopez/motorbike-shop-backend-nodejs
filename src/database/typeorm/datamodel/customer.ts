@@ -1,6 +1,6 @@
 import { Entity, PrimaryColumn, Column } from "typeorm";
 
-export class TypeOrmBillingAddress {
+export class TypeOrmBillingAddress  {
     @Column({ type: 'varchar', nullable: true })
     readonly street: string;
 

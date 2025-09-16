@@ -1,6 +1,7 @@
 import {DataSource} from "typeorm";
 import {TypeOrmCustomer} from "./datamodel/customer";
-import {TypeOrmOrderItem, TypeOrmPurchaseOrder} from "./datamodel/purchase-order";
+import { TypeOrmPurchaseOrder} from "./datamodel/purchase-order";
+import {TypeOrmOrderItem} from "./datamodel/order-item";
 
 export const defaultDataSource = new DataSource({
     type: "sqlite",

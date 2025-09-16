@@ -18,7 +18,8 @@ import {TypeOrmPurchaseOrder} from "./database/typeorm/datamodel/purchase-order"
 import {TypeOrmPurchaseOrderRepository} from "./database/typeorm/purchase-order-repository";
 import {PurchaseOrderController} from "./controllers/rest/purchase-order";
 import {PurchaseOrderService} from "./services/purchase-order";
-import {TypeOrmTransactionManager} from "./database/typeorm/transaction-manager";
+import {TypeOrmConnection} from "./database/typeorm/db-connection";
+import {TypeOrmOrderItem} from "./database/typeorm/datamodel/order-item";
 
 export const createAppContainer = async () => {
     const container = createContainer({
@@ -55,12 +56,17 @@ export const createAppContainer = async () => {
     
     await dataSource.initialize();
 
-    const getCustomerRepositoryConn = (): Repository<TypeOrmCustomer> => {
-        return dataSource.getRepository(TypeOrmCustomer);
+
+    const getCustomerRepositoryConn = (connectionDb:TypeOrmConnection): Repository<TypeOrmCustomer> => {
+        return connectionDb.entityManager().getRepository(TypeOrmCustomer);
     }
 
-    const getPurchaseOrderRepositoryConn = (): Repository<TypeOrmPurchaseOrder> => {
-        return dataSource.getRepository(TypeOrmPurchaseOrder);
+    const getPurchaseOrderRepositoryConn = (connectionDb:TypeOrmConnection): Repository<TypeOrmPurchaseOrder> => {
+        return connectionDb.entityManager().getRepository(TypeOrmPurchaseOrder);
+    }
+
+    const getOrderItemRepositoryConn = (connectionDb:TypeOrmConnection): Repository<TypeOrmOrderItem> => {
+        return connectionDb.entityManager().getRepository(TypeOrmOrderItem);
     }
     
     const customerCacheMemory = new Map<string, CustomerDTO>();
@@ -86,17 +92,18 @@ export const createAppContainer = async () => {
 
     container.register({
         dataSource: asValue(dataSource),
-        customerRepositoryConn: asFunction(getCustomerRepositoryConn).scoped(),
+        connectionDb: asClass(TypeOrmConnection).scoped(),
+        customerRepositoryConn: asFunction(({connectionDb}) => getCustomerRepositoryConn(connectionDb)).scoped(),
         customerRepository: asClass(TypeOrmCustomerRepository).scoped(),
-        purchaseOrderRepositoryConn: asFunction(getPurchaseOrderRepositoryConn).scoped(),
-        transactionManager: asClass(TypeOrmTransactionManager).scoped(),
+        purchaseOrderRepositoryConn: asFunction(({connectionDb}) => getPurchaseOrderRepositoryConn(connectionDb)).scoped(),
+        orderItemRepositoryConn: asFunction(({connectionDb})=> getOrderItemRepositoryConn(connectionDb)).scoped(),
         purchaseOrderRepository: asClass(TypeOrmPurchaseOrderRepository).scoped(),
         customerCache: asFunction(makeCustomerCache).scoped(),
         customerService: asClass(CustomerService).scoped(),
         customerController: asClass(CustomerController).scoped(),
         purchaseOrderController: asClass(PurchaseOrderController).scoped(),
         purchaseOrderService: asClass(PurchaseOrderService).scoped(),
-        unitOfWork: asFunction(({ transactionManager }) => transactionManager).scoped(),
+        unitOfWork: asFunction(({connectionDb}) => connectionDb).scoped(),
     });
 
     return container;

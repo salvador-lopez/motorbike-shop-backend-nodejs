@@ -1,12 +1,16 @@
-import {EntityManager, DataSource, QueryRunner, QueryFailedError} from "typeorm";
+import {DataSource, QueryRunner, EntityManager, EntityTarget} from "typeorm";
 import { AsyncLocalStorage } from "node:async_hooks";
 import {UnitOfWork} from "../../services/unit-of-work";
 
-export class TypeOrmTransactionManager implements UnitOfWork {
+export interface TypeOrmConnectionAware{
+    entityManager(): EntityManager
+}
+
+export class TypeOrmConnection implements UnitOfWork, TypeOrmConnectionAware {
     private asyncLocalStorage = new AsyncLocalStorage<QueryRunner>();
     private dataSource :DataSource
 
-    constructor({dataSource}: {dataSource: DataSource }) {
+    constructor({dataSource}: { dataSource: DataSource }) {
         this.dataSource = dataSource;
     }
 
@@ -25,12 +29,6 @@ export class TypeOrmTransactionManager implements UnitOfWork {
 
                     return result;
                 } catch (error) {
-                    if(error instanceof  QueryFailedError){
-                        console.log('Error in transaction', error.message)
-                    }else{
-                        console.log("Error in transaction", error)
-                    }
-
                     await queryRunner.rollbackTransaction();
                     throw error;
                 }
@@ -40,7 +38,7 @@ export class TypeOrmTransactionManager implements UnitOfWork {
         }
     }
 
-    get repository(): EntityManager {
+    entityManager(): EntityManager {
         const queryRunner = this.asyncLocalStorage.getStore();
 
         return queryRunner ? queryRunner.manager : this.dataSource.manager;
