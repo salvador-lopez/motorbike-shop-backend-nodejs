@@ -18,7 +18,6 @@ export class PurchaseOrderService {
     }
 
     public async create(id:string,customerId: string,orderItems:OrderItemDTO[]): Promise<void> {
-        await this.unitOfWork.transaction(async () => {
             const orders = orderItems.map(dto => new OrderItem(new EntityId(dto.id), new EntityId(dto.productId), dto.quantity, dto.unitPrice));
             const newPurchaseOrder = new PurchaseOrder(new EntityId(id), new EntityId(customerId), orders);
 
@@ -27,6 +26,7 @@ export class PurchaseOrderService {
                 throw new EntityWithSameIdAlreadyExistError(newPurchaseOrder.id);
             }
 
+        await this.unitOfWork.transaction(async () => {
             await this.repository.create(newPurchaseOrder);
         })
     }
