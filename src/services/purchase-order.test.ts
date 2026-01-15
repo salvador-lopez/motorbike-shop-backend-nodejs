@@ -5,16 +5,24 @@ import { PurchaseOrder, PurchaseOrderRepository} from "../domain/purchase-order"
 import {OrderItemDTO, PurchaseOrderDTO, PurchaseOrderService} from "./purchase-order";
 import {DomainConflictError, EntityNotFoundError, EntityWithSameIdAlreadyExistError} from "../domain/errors";
 import {OrderItem} from "../domain/order-item";
+import {UnitOfWork} from "./unit-of-work";
 
 describe('PurchaseOrderService', () => {
     const mockRepository = mock<PurchaseOrderRepository>();
-    const purchaseOrderService = new PurchaseOrderService({purchaseOrderRepository: mockRepository});
+    const mockUnitOfWork = mock<UnitOfWork>();
+    const purchaseOrderService = new PurchaseOrderService({purchaseOrderRepository: mockRepository, unitOfWork: mockUnitOfWork });
 
     beforeEach(() => {
         mockReset(mockRepository);
+        mockReset(mockUnitOfWork);
     });
 
     describe('create', () => {
+    beforeEach(() => {
+        mockUnitOfWork.transaction.mockImplementationOnce(async (callback) => {
+            return await callback();
+        })
+    });
 
     it('create happy path', async () => {
         const id = UUID();

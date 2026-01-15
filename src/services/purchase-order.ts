@@ -2,27 +2,33 @@ import { PurchaseOrder, PurchaseOrderRepository} from "../domain/purchase-order"
 import {EntityId} from "../domain/common";
 import {EntityNotFoundError, EntityWithSameIdAlreadyExistError} from "../domain/errors";
 import {OrderItem} from "../domain/order-item";
+import {UnitOfWork} from "./unit-of-work";
 
 
 export class PurchaseOrderService {
     private repository: PurchaseOrderRepository;
+    private unitOfWork: UnitOfWork;
 
     constructor(
-        {purchaseOrderRepository}: { purchaseOrderRepository: PurchaseOrderRepository}
+        {purchaseOrderRepository, unitOfWork}: { purchaseOrderRepository: PurchaseOrderRepository, unitOfWork: UnitOfWork}
+
     ) {
+        this.unitOfWork = unitOfWork;
         this.repository = purchaseOrderRepository;
     }
 
     public async create(id:string,customerId: string,orderItems:OrderItemDTO[]): Promise<void> {
-      const orders = orderItems.map(dto => new OrderItem(new EntityId(dto.id),new EntityId(dto.productId),dto.quantity,dto.unitPrice));
-      const newPurchaseOrder = new PurchaseOrder(new EntityId(id), new EntityId(customerId), orders);
+            const orders = orderItems.map(dto => new OrderItem(new EntityId(dto.id), new EntityId(dto.productId), dto.quantity, dto.unitPrice));
+            const newPurchaseOrder = new PurchaseOrder(new EntityId(id), new EntityId(customerId), orders);
 
-        let purchaseOrder = await this.repository.findById(newPurchaseOrder.id);
-        if (purchaseOrder) {
-            throw new EntityWithSameIdAlreadyExistError(newPurchaseOrder.id);
-        }
+            const purchaseOrder = await this.repository.findById(newPurchaseOrder.id);
+            if (purchaseOrder) {
+                throw new EntityWithSameIdAlreadyExistError(newPurchaseOrder.id);
+            }
 
-      await this.repository.create(newPurchaseOrder);
+        await this.unitOfWork.transaction(async () => {
+            await this.repository.create(newPurchaseOrder);
+        })
     }
 
     public async get(id:string): Promise<PurchaseOrderDTO>{

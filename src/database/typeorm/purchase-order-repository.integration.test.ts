@@ -1,18 +1,19 @@
 import {testDataSource} from "./data-source";
 import {EntityId} from "../../domain/common";
 import { v4 as UUID} from 'uuid';
-import {QueryFailedError} from "typeorm";
 import {Repository} from "typeorm/repository/Repository";
-import {TypeOrmOrderItem, TypeOrmPurchaseOrder} from "./datamodel/purchase-order";
+import {TypeOrmPurchaseOrder} from "./datamodel/purchase-order";
 import {TypeOrmPurchaseOrderRepository} from "./purchase-order-repository";
 import {PurchaseOrder} from "../../domain/purchase-order";
 import {OrderItem} from "../../domain/order-item";
+import {TypeOrmOrderItem} from "./datamodel/order-item";
 
 let purchaseOrderRepo: TypeOrmPurchaseOrderRepository;
 const typeOrmRepo: Repository<TypeOrmPurchaseOrder> = testDataSource.getRepository(TypeOrmPurchaseOrder);
 
 beforeEach(async () => {
-    purchaseOrderRepo = new TypeOrmPurchaseOrderRepository({purchaseOrderRepositoryConn: typeOrmRepo});
+    purchaseOrderRepo = new TypeOrmPurchaseOrderRepository({ purchaseOrderRepositoryConn: testDataSource.getRepository(TypeOrmPurchaseOrder), orderItemRepositoryConn: testDataSource.getRepository(TypeOrmOrderItem) });
+
     await typeOrmRepo.clear();
 });
 
@@ -42,10 +43,10 @@ describe("PurchaseOrder Repository Integration Test", () => {
         if (purchaseOrderDataModel !== null) {
             expect(purchaseOrderDataModel.id).toBe(entityId.value);
             expect(purchaseOrderDataModel.customerId).toBe(customerId.value);
-            expect(purchaseOrder.orderItems[0].id).toBe(orderItemId);
-            expect(purchaseOrder.orderItems[0].unitPrice).toBe(orderItemUnitPrice);
-            expect(purchaseOrder.orderItems[0].quantity).toBe(orderItemQuantity);
-            expect(purchaseOrder.orderItems[0].productId).toBe(orderItemProductId);
+            expect(purchaseOrderDataModel.orderItems[0].id).toBe(orderItemId.value);
+            expect(purchaseOrderDataModel.orderItems[0].unitPrice).toBe(orderItemUnitPrice);
+            expect(purchaseOrderDataModel.orderItems[0].quantity).toBe(orderItemQuantity);
+            expect(purchaseOrderDataModel.orderItems[0].productId).toBe(orderItemProductId.value);
         }
     });
 
